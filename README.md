@@ -11,13 +11,13 @@ pip install brightway25 pypardiso
 python monte_carlo_V2.0.py
 
 # Run graphical analysis
-python statistic.py
+python statistic_analysis.py
 ```
 
 ## Description
 - 20240805-Import-exio3big-and-monte-carlo-bw25.py: This is the origin script from ElisabettaPigni.
 - monte_carlo_V2.0.py: This script is for simulation and result saving.
-- statistic.py: This script is used to perform graphical analysis of the data.
+- statistic_analysis.py: This script is used to perform graphical analysis of the data.
 
 Reference:
 [Brightway Installation](https://docs.brightway.dev/en/latest/content/installation/index.html)
