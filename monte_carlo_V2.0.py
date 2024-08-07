@@ -9,13 +9,11 @@
 import bw_processing as bwp #this is needed for brightway 2.5 package
 import bw2calc as bc #this is needed for brightway 2.5 package
 import bw2data as bd #this is needed for brightway 2.5 package
-import pandas as pd
 from scipy import sparse #This is necessary to create the sparse matrix, which is a lighter matrix in which zero values have been removed.
+import pandas as pd
 import numpy as np
 import os
-import seaborn as sb #This is needed for the graphical rapresentation of the monte carlo results
-import matplotlib.pyplot as plt #This is needed for the graphical rapresentation of the monte carlo results
-from matplotlib.ticker import FuncFormatter #This is needed for the graphical rapresentation of the monte carlo results
+from statistic_analysis import StatisticAnalysis
 
 
 class SimulationScript:
@@ -83,14 +81,12 @@ class SimulationScript:
         B = S.to_numpy()
 
         # Intervention matrix B as sparse object and then coordinates
-
         Bsparse = sparse.coo_array(B)
         b_data = Bsparse.data # amounts or values
         b_indices_remap = [[i[0] + len(activities),i[1]] for i in np.transpose(Bsparse.nonzero())] # need to make sure biosphere indices are different from technosphere
         b_indices = np.array([tuple(coord) for coord in b_indices_remap], dtype=bwp.INDICES_DTYPE)
 
         # matrix of charachterisation factors (method E.F. 3.1 - Climate change)
-
         CFs = [1., 29.8, 273., 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 1., 1., 25200., 14600., 29.8, 1., 273., 29.8, 1., 1.]
 
         C = np.matrix(np.zeros((len(CFs), len(CFs))))
@@ -103,8 +99,7 @@ class SimulationScript:
         c_indices_remap = [[i[1] + len(activities),i[1]+ len(activities)] for i in np.transpose(Csparse.nonzero())] # same indices as in B
         c_indices = np.array([tuple(coord) for coord in c_indices_remap], dtype=bwp.INDICES_DTYPE) 
 
-
-        return activities, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip
+        return activities, A, A_IO, B, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip
     
     
     #%% LIFE CYCLE ASSESSMENT WITH BRIGHTWAY 2.5 (Sector ??? - method E.F. 3.1 - Climate change)
@@ -138,7 +133,6 @@ class SimulationScript:
         lca.lci()
         lca.lcia()
         lca.score
-
 
         # check with normal matrix operation
         f = np.zeros(len(A))
@@ -288,6 +282,7 @@ class SimulationScript:
         return lca
 
 
+    # Save result
     def save_result(self, directory, lca, k):
         os.makedirs(directory, exist_ok=True)  # Create the directory if it does not exist
             
@@ -339,9 +334,11 @@ if __name__ == "__main__":
     simu = SimulationScript()
 
     # Adapt matrices for bw
-    activities, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = simu.build_bw_matrix(A_file_path, S_file_path)
+    activities, A, A_IO, B, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = simu.build_bw_matrix(A_file_path, S_file_path)
     print("Matrices is formatted.")
 
+
+    # --------------------- Simulation --------------------- 
     k = 0
     for t in dist_type:
         # This is the uniform case
@@ -379,3 +376,9 @@ if __name__ == "__main__":
             pass
 
     print("All simulations completed.")
+
+
+    # --------------------- Statistic Analysis --------------------- 
+    stat = StatisticAnalysis()
+    stat.simu_plot()
+    stat.matrix_plot(A, A_IO, B)
