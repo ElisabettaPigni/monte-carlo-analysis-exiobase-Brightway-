@@ -256,36 +256,32 @@ class SimulationScript:
         return lca
 
 
-    # Save result
+    # Save results to csv
     def save_result(self, directory, lca, k):
         os.makedirs(directory, exist_ok=True)  # Create the directory if it does not exist
-            
+        filename = os.path.join(directory, f"CASE_{k}_MC_simulations.csv") # Define filename for saving results
+        
         # Define simulation parameters
         batch_size = 50
         num_batches = 10
-        
-        # List to store the results
-        cumulative_results = []
 
-        # Write results to csv file
-        for p in range(num_batches):
-            # Run simulations for the current batch
-            batch_results = [lca.score for _ in zip(range(batch_size), lca)]
+        file.write("kg CO2eq\n") # Write the header
+
+        with open(filename, "w") as file:
+            for p in range(num_batches):
+                # Run simulations for the current batch
+                batch_results = [lca.score for _ in zip(range(batch_size), lca)]
+                
+                # Convert to DataFrame
+                df_batch = pd.DataFrame(batch_results, columns=["kg CO2eq"])
+                
+                # Save batch results to CSV, appending to the file
+                df_batch.to_csv(file, header=False, index=False)
             
-            # Accumulate results
-            cumulative_results.extend(batch_results)
-            
-            # Convert to DataFrame
-            df_cumulative = pd.DataFrame(cumulative_results, columns=["kg CO2eq"])
-            
-            # Define filename for saving results
-            filename = os.path.join(directory, f"CASE_{k}_MC_simulations.csv")
-            
-            # Save to CSV
-            df_cumulative.to_csv(filename, index=False)
-            
-            # Print progress
-            print(f"Result saved to {filename}.")
+                # Print progress
+                print(f"Batch {p} saved to {filename}.")
+
+        print(f"Results saved to {filename}.")
 
 
 if __name__ == "__main__":
