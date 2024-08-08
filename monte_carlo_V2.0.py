@@ -88,7 +88,7 @@ class SimulationScript:
     
     
     # Perform baseline simulation
-    def normal_lca(self, activities, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C):
+    def baseline_lca(self, activities, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C):
         # Creating the datapackage
         dp_static = bwp.create_datapackage()
         dp_static.add_persistent_vector(
@@ -161,27 +161,6 @@ class SimulationScript:
                 dtype=[('uncertainty_type', 'i4'), ('loc', 'f4'), ('scale', 'f4'), 
                     ('shape', 'f4'), ('minimum', 'f4'), ('maximum', 'f4'), ('negative', 'b')]
             )
-
-            dp_stochastic = bwp.create_datapackage()
-            
-            dp_stochastic.add_persistent_vector(
-                matrix='technosphere_matrix',
-                indices_array=a_indices,
-                data_array=a_data,
-                flip_array=a_flip,
-                distributions_array=a_uncertainty,
-            )
-            dp_stochastic.add_persistent_vector(
-                matrix='biosphere_matrix',
-                indices_array=b_indices,
-                data_array=b_data,
-                distributions_array=b_uncertainty,
-            )
-            dp_stochastic.add_persistent_vector(
-                matrix='characterization_matrix',
-                indices_array=c_indices,
-                data_array=c_data,
-            )
         elif t == "log-normal":
             results_a = []
             results_b = []
@@ -216,26 +195,26 @@ class SimulationScript:
                     ('shape', 'f4'), ('minimum', 'f4'), ('maximum', 'f4'), ('negative', 'b')]
             )
 
-            dp_stochastic = bwp.create_datapackage()
+        dp_stochastic = bwp.create_datapackage()
 
-            dp_stochastic.add_persistent_vector(
-                matrix='technosphere_matrix',
-                indices_array=a_indices,
-                data_array=a_data,
-                flip_array=a_flip,
-                distributions_array=a_uncertainty,
-            )
-            dp_stochastic.add_persistent_vector(
-                matrix='biosphere_matrix',
-                indices_array=b_indices,
-                data_array=b_data,
-                distributions_array=b_uncertainty,
-            )
-            dp_stochastic.add_persistent_vector(
-                matrix='characterization_matrix',
-                indices_array=c_indices,
-                data_array=c_data,
-            )
+        dp_stochastic.add_persistent_vector(
+            matrix='technosphere_matrix',
+            indices_array=a_indices,
+            data_array=a_data,
+            flip_array=a_flip,
+            distributions_array=a_uncertainty,
+        )
+        dp_stochastic.add_persistent_vector(
+            matrix='biosphere_matrix',
+            indices_array=b_indices,
+            data_array=b_data,
+            distributions_array=b_uncertainty,
+        )
+        dp_stochastic.add_persistent_vector(
+            matrix='characterization_matrix',
+            indices_array=c_indices,
+            data_array=c_data,
+        )
 
         return dp_stochastic
     
@@ -350,7 +329,7 @@ if __name__ == "__main__":
 
                 simu.save_result(dir_output, lca, k)
 
-        elif t == "normal_lca":
+        elif t == "baseline":
             pass
 
     print("All simulations completed.")
