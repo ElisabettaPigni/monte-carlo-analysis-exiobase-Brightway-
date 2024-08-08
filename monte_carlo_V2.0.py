@@ -87,7 +87,7 @@ class SimulationScript:
         return activities, A, A_IO, B, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip
     
     
-    #%% LIFE CYCLE ASSESSMENT WITH BRIGHTWAY 2.5 (Sector ??? - method E.F. 3.1 - Climate change)
+    # Perform baseline simulation
     def normal_lca(self, activities, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C):
         # Creating the datapackage
         dp_static = bwp.create_datapackage()
@@ -295,7 +295,7 @@ if __name__ == "__main__":
 
     u_uniform = [0.1, 0.2, 0.3, 0.5]
     u_log = [1.01, 1.1, 2]
-    dist_type = ["uniform", "log-normal", "normal_lca"]
+    dist_type = ["uniform", "log-normal", "baseline"]
 
     # File paths
     dir_input = "/Users/bp45th/Documents/github/monte-carlo-analysis-exiobase-Brightway-/exiobase_2022_small"
