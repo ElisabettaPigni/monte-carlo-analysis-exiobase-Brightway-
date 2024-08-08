@@ -1,11 +1,3 @@
-# Import IO database from original table
-
-# doing the same as here: https://github.com/brightway-lca/from-the-ground-up/blob/main/2%20-%20Building%20and%20using%20matrices%20in%20bw2calc.ipynb
-
-# Brightway documentation for uncertainty https://stats-arrays.readthedocs.io/en/latest/#mapping-parameter-array-columns-to-uncertainty-distributions
-
-
-#%% importing packages
 import bw_processing as bwp #this is needed for brightway 2.5 package
 import bw2calc as bc #this is needed for brightway 2.5 package
 import bw2data as bd #this is needed for brightway 2.5 package
@@ -36,21 +28,16 @@ class SimulationScript:
         "349b29d1-3e58-4c66-98b9-9d1a076efd2e", "20185046-64bb-4c09-a8e7-e8a9e144ca98", "0795345f-c7ae-410c-ad25-1845784c75f5", "349b29d1-3e58-4c66-98b9-9d1a076efd2e", "349b29d1-3e58-4c66-98b9-9d1a076efd2e"
         ]
 
-        # to obtain ecoinvent code directly from ecoinvent, use this code: https://github.com/brightway-lca/brightway2-io/blob/main/bw2io/data/lci/EXIOBASE-ecoinvent-biosphere.csv?plain=1
-
         A_IO = A_raw.iloc[2:,2:].astype('float').values
         I = np.identity(len(A_IO))
         A_ = I - A_IO
         A = -A_
         np.fill_diagonal(A, -A.diagonal()) # then change back again, but only the diagonal
 
-        # technology matrix A as sparse object and then coordinates
-        Asparse = sparse.coo_array(A)
+        Asparse = sparse.coo_array(A) # technology matrix A as sparse object and then coordinates
         a_data = Asparse.data # amounts or values
         a_indices = np.array([tuple(coord) for coord in np.transpose(Asparse.nonzero())], dtype=bwp.INDICES_DTYPE) # indices of each exchange
         a_flip = np.array([False if i[0] == i[1] else True for i in a_indices ]) # Numerical sign of the inputs needs to be flipped negative
-
-        # import environemntla extensions
 
         S_raw = pd.read_table(S_file_path, header=[0,1], index_col=[0])
 
@@ -80,8 +67,7 @@ class SimulationScript:
 
         B = S.to_numpy()
 
-        # Intervention matrix B as sparse object and then coordinates
-        Bsparse = sparse.coo_array(B)
+        Bsparse = sparse.coo_array(B) # Intervention matrix B as sparse object and then coordinates
         b_data = Bsparse.data # amounts or values
         b_indices_remap = [[i[0] + len(activities),i[1]] for i in np.transpose(Bsparse.nonzero())] # need to make sure biosphere indices are different from technosphere
         b_indices = np.array([tuple(coord) for coord in b_indices_remap], dtype=bwp.INDICES_DTYPE)
@@ -93,8 +79,7 @@ class SimulationScript:
         C_diag = np.matrix(CFs)
         np.fill_diagonal(C, C_diag)
 
-        # Sparse C  matrix of characterisation factors
-        Csparse = sparse.coo_array(C)
+        Csparse = sparse.coo_array(C) # Sparse C  matrix of characterisation factors
         c_data =  Csparse.data 
         c_indices_remap = [[i[1] + len(activities),i[1]+ len(activities)] for i in np.transpose(Csparse.nonzero())] # same indices as in B
         c_indices = np.array([tuple(coord) for coord in c_indices_remap], dtype=bwp.INDICES_DTYPE) 
@@ -104,7 +89,7 @@ class SimulationScript:
     
     #%% LIFE CYCLE ASSESSMENT WITH BRIGHTWAY 2.5 (Sector ??? - method E.F. 3.1 - Climate change)
     def normal_lca(self, activities, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C):
-        # Creating a datapackage
+        # Creating the datapackage
         dp_static = bwp.create_datapackage()
         dp_static.add_persistent_vector(
             matrix='technosphere_matrix',
@@ -134,8 +119,7 @@ class SimulationScript:
         lca.lcia()
         lca.score
 
-        # check with normal matrix operation
-        f = np.zeros(len(A))
+        f = np.zeros(len(A)) # check with normal matrix operation
         f[1] = 1 # functional unit
 
         print('ioscore',np.sum(C.dot(B.dot((np.linalg.inv(A_)).dot(f))))) # matrix operation
@@ -143,16 +127,6 @@ class SimulationScript:
 
 
     # -------------------------------------- STOCHASTIC LCA ----------------------------------------------
-
-    # Description:
-        # CASE 1: uniform distribution with 10% uncertainty
-        # CASE 2: uniform distribution with 20% uncertainty
-        # CASE 3: uniform distribution with 30% uncertainty
-        # CASE 4: log-normal distribution with 1.01 uncertainty
-        # CASE 5: log-normal distribution with 1.1 uncertainty 
-        # CASE 6: log-normal distribution with 2 uncertainty 
-
-
     # Ready the matries for simulation
     def add_uncertainty(self, t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip):
         if t == "uniform":
@@ -293,7 +267,7 @@ class SimulationScript:
         # List to store the results
         cumulative_results = []
 
-        # Run Monte Carlo simulations and save results
+        # Write results to csv file
         for p in range(num_batches):
             # Run simulations for the current batch
             batch_results = [lca.score for _ in zip(range(batch_size), lca)]
@@ -315,6 +289,14 @@ class SimulationScript:
 
 
 if __name__ == "__main__":
+    # Monte Carlo simulation Description:
+        # CASE 1: uniform distribution with 10% uncertainty
+        # CASE 2: uniform distribution with 20% uncertainty
+        # CASE 3: uniform distribution with 30% uncertainty
+        # CASE 4: log-normal distribution with 1.01 uncertainty
+        # CASE 5: log-normal distribution with 1.1 uncertainty 
+        # CASE 6: log-normal distribution with 2 uncertainty 
+
     u_uniform = [0.1, 0.2, 0.3, 0.5]
     u_log = [1.01, 1.1, 2]
     dist_type = ["uniform", "log-normal", "normal_lca"]
