@@ -20,8 +20,8 @@ python statistic_analysis.py
 - statistic_analysis.py: This script is used to perform graphical analysis of the data.
 
 ### Reference:  
-[Brightway Installation](https://docs.brightway.dev/en/latest/content/installation/index.html)  
-[from-the-ground-up/2 - Building and using matrices in bw2calc.ipynb](https://github.com/brightway-lca/from-the-ground-up/blob/main/2%20-%20Building%20and%20using%20matrices%20in%20bw2calc.ipynb)  
-[Correspondance table exiobase-ecoinvent (biosphere)](https://github.com/brightway-lca/brightway2-io/blob/main/bw2io/data/lci/EXIOBASE-ecoinvent-biosphere.csv?plain=1)
-[Brightway documentation for uncertainty](https://stats-arrays.readthedocs.io/en/latest/#mapping-parameter-array-columns-to-uncertainty-distributions)  
-[EXIOBASE-ecoinvent-biosphere.csv](https://github.com/brightway-lca/brightway2-io/blob/main/bw2io/data/lci/EXIOBASE-ecoinvent-biosphere.csv?plain=1)  
+- [Brightway Installation](https://docs.brightway.dev/en/latest/content/installation/index.html)  
+- [from-the-ground-up/2 - Building and using matrices in bw2calc.ipynb](https://github.com/brightway-lca/from-the-ground-up/blob/main/2%20-%20Building%20and%20using%20matrices%20in%20bw2calc.ipynb)  
+- [Correspondance table exiobase-ecoinvent (biosphere)](https://github.com/brightway-lca/brightway2-io/blob/main/bw2io/data/lci/EXIOBASE-ecoinvent-biosphere.csv?plain=1)
+- [Brightway documentation for uncertainty](https://stats-arrays.readthedocs.io/en/latest/#mapping-parameter-array-columns-to-uncertainty-distributions)  
+- [EXIOBASE-ecoinvent-biosphere.csv](https://github.com/brightway-lca/brightway2-io/blob/main/bw2io/data/lci/EXIOBASE-ecoinvent-biosphere.csv?plain=1)  
