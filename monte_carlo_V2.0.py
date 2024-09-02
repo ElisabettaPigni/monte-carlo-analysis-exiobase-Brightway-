@@ -38,8 +38,7 @@ class SimulationScript:
         A_raw = pd.read_table(A_file_path)
         A_IO = A_raw.iloc[2:,2:].astype('float').values
         I = np.identity(len(A_IO))
-        A_ = I - A_IO
-        A = -A_
+        A = A_IO - I
         np.fill_diagonal(A, -A.diagonal()) # then change back again, but only the diagonal
 
         Asparse = sparse.coo_array(A) # technology matrix A as sparse object and then coordinates
@@ -296,7 +295,7 @@ if __name__ == "__main__":
     chosen_activities = simu.choose_activities(activities, amount)
     print("The following activities are chosen:")
     for myact, _ in chosen_activities:
-        print(myact, end="")
+        print(myact, end=",")
     
     # Adapt matrices for bw
     A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = simu.build_bw_matrix(A_file_path, S_file_path)
