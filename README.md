@@ -1,8 +1,7 @@
 # Quick start
 ## Dependencies
 ```
-# This command will install all the bw packages needed.
-pip install brightway25 pypardiso
+pip install -r requirements.txt
 ```
 
 ## Run script
