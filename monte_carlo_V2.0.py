@@ -290,12 +290,13 @@ if __name__ == "__main__":
     # --------------------- Simulation --------------------- 
     simu = SimulationScript()
 
-    # Choose activities
-    activities = simu.get_activities(A_file_path)
-    chosen_activities = simu.choose_activities(activities, amount)
-    print("The following activities are chosen:")
-    for myact, _ in chosen_activities:
-        print(myact, end=",")
+    # Choose activities (If you want to change the chosen activities, please uncomment the following code.)
+    # activities = simu.get_activities(A_file_path)
+    # chosen_activities = simu.choose_activities(activities, amount)
+    # print("The following activities are chosen:")
+    # for myact, _ in chosen_activities:
+    #     print(myact, end=",")
+    chosen_activities = ["RoW-Services", "EU28-Biodiesels", "EU28-Agriculture-Forestry-Fishing", "EU28-Basic iron and steel and of ferro-alloys and first products thereof"]
     
     # Adapt matrices for bw
     A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = simu.build_bw_matrix(A_file_path, S_file_path)
