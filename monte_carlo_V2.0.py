@@ -133,7 +133,6 @@ class SimulationScript:
         return lca
 
 
-    # -------------------------------------- STOCHASTIC LCA ----------------------------------------------
     # Ready the matries for simulation
     def add_uncertainty(self, t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip):
         if t == "uniform":

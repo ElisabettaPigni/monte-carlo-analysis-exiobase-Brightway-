@@ -1,8 +1,19 @@
 # Quick start
-## Dependencies
-```
-pip install -r requirements.txt
-```
+## Run remotely
+1. Clone this repository
+    ```
+    git clone <repo_name>
+    cd <repo_folder_name>
+    ```
+2. Upload your data to remote machine
+3. Install dependencies
+    ```
+    pip install -r requirements.txt
+    ```
+4. Run script
+    ```
+    python monte_carlo_V2.0.py
+    ```
 
 ## Run script
 ```
