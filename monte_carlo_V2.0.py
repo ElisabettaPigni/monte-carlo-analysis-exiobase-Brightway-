@@ -5,7 +5,6 @@ from scipy import sparse #This is necessary to create the sparse matrix, which i
 import pandas as pd
 import numpy as np
 from random import sample
-import random
 import os
 from statistic_analysis import StatisticAnalysis
 
@@ -38,7 +37,8 @@ class SimulationScript:
         A_raw = pd.read_table(A_file_path)
         A_IO = A_raw.iloc[2:,2:].astype('float').values
         I = np.identity(len(A_IO))
-        A = A_IO - I
+        A_ = I - A_IO
+        A = -A_
         np.fill_diagonal(A, -A.diagonal()) # then change back again, but only the diagonal
 
         Asparse = sparse.coo_array(A) # technology matrix A as sparse object and then coordinates
@@ -96,7 +96,7 @@ class SimulationScript:
     
 
     # Perform baseline simulation
-    def perform_baseline(self, myact, index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C):
+    def perform_baseline(self, index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, directory, t):
         # Creating a datapackage
         dp_static = bwp.create_datapackage()
         dp_static.add_persistent_vector(
@@ -117,7 +117,7 @@ class SimulationScript:
         )
 
         lca = bc.LCA(
-            demand={activities.index(myact): 1}, # using index because the argument of FU is an INTEGER
+            demand={index: 1}, # using index because the argument of FU is an INTEGER
             data_objs=[dp_static],
         )
         lca.lci()
@@ -127,10 +127,18 @@ class SimulationScript:
         f = np.zeros(len(A))
         f[index] = 1 # functional unit
 
-        print('ioscore',np.sum(C.dot(B.dot((np.linalg.inv(A_)).dot(f))))) # matrix operation
-        print('LCA score: ',lca.score)  # similar values, when rounded. All is good
+        os.makedirs(directory, exist_ok=True)  # Create the directory if it does not exist
+        filename = os.path.join(directory, f"CASE_{k}_{t}_MC_simulations_{myact}.csv") # Define filename for saving results
 
-        return lca
+        print('ioscore',np.sum(C.dot(B.dot((np.linalg.inv(A_)).dot(f))))) # matrix operation
+        print('LCA score: ', np.around(lca.score, decimals=2))  # similar values, when rounded. All is good
+
+        with open(filename, "w") as file:
+            file.write("kg CO2eq\n") # Write the header
+            file.write(f"{lca.score}") # Write the header
+            print(f"Baseline result saved to {filename}.")
+
+        return
 
 
     # Ready the matries for simulation
@@ -226,24 +234,19 @@ class SimulationScript:
     
 
     # Perform Monte Carlo simulation
-    def perform_simu(self, myact, dp_stochastic, activities):
+    def perform_simu(self, index, dp_stochastic, directory, k, myact, t, u):
         lca = bc.LCA(
-            demand={activities.index(myact): 1},
+            demand={index: 1},
             data_objs=[dp_stochastic],
             use_distributions=True,
         )
         lca.lci()
         lca.lcia()
 
-        print('LCA score: ',lca.score)
-        
-        return lca
-    
+        print('LCA score: ', np.around(lca.score, decimals=2))
 
-    # Save results to csv
-    def save_result(self, directory, lca, k, myact):
         os.makedirs(directory, exist_ok=True)  # Create the directory if it does not exist
-        filename = os.path.join(directory, f"CASE_{k}_MC_simulations_{myact}.csv") # Define filename for saving results
+        filename = os.path.join(directory, f"CASE_{k}_{t}_{u}_MC_simulations_{myact}.csv") # Define filename for saving results
         
         # Define simulation parameters
         batch_size = 50
@@ -253,7 +256,7 @@ class SimulationScript:
             file.write("kg CO2eq\n") # Write the header
             for p in range(num_batches):
                 # Run simulations for the current batch
-                batch_results = [lca.score for _ in zip(range(batch_size), lca)]
+                batch_results = [np.around(lca.score, decimals=2) for _ in zip(range(batch_size), lca)]
                 
                 # Convert to DataFrame
                 df_batch = pd.DataFrame(batch_results, columns=["kg CO2eq"])
@@ -265,12 +268,13 @@ class SimulationScript:
                 print(f"Batch {p} saved to {filename}.")
 
         print(f"Results saved to {filename}.")
-
+        
+        return
 
 if __name__ == "__main__":
     # --------------------- Configuration --------------------- 
     dist_type = ["baseline", "uniform", "log-normal"] # Define the types of distribution
-    u_uniform = [0.1, 0.2, 0.3, 0.5] # Define the uncertainty for uniform distribution
+    u_uniform = [0.1, 0.2, 0.3] # Define the uncertainty for uniform distribution
     u_log = [1.01, 1.1, 2] # Define the uncertainty for log distribution
     amount = 4 # This is the amount of activities for 1 CASE
 
@@ -295,7 +299,7 @@ if __name__ == "__main__":
     # print("The following activities are chosen:")
     # for myact, _ in chosen_activities:
     #     print(myact, end=",")
-    chosen_activities = ["RoW-Services", "EU28-Biodiesels", "EU28-Agriculture-Forestry-Fishing", "EU28-Basic iron and steel and of ferro-alloys and first products thereof"]
+    chosen_activities = [("RoW-Services", 68), ("EU28-Biodiesels", 11), ("EU28-Agriculture-Forestry-Fishing", 0), ("EU28-Basic iron and steel and of ferro-alloys and first products thereof", 13)]
     
     # Adapt matrices for bw
     A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = simu.build_bw_matrix(A_file_path, S_file_path)
@@ -309,8 +313,7 @@ if __name__ == "__main__":
             for myact, index in chosen_activities:
                 k += 1
                 print(f"----------- Starting CASE {k}, activity: {myact} -----------")
-                lca = simu.perform_baseline(myact, index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C)
-                simu.save_result(dir_output, lca, k, myact)
+                lca = simu.perform_baseline(index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, dir_output, t)
 
                 print(f"CASE {k} simulation is done.")
 
@@ -326,8 +329,7 @@ if __name__ == "__main__":
                     print(f"Uncertainty added to CASE {k}")
 
                     # Perform lca
-                    lca = simu.perform_simu(myact, dp_stochastic, activities)
-                    simu.save_result(dir_output, lca, k, myact)
+                    lca = simu.perform_simu(index, dp_stochastic, dir_output, k, myact, t, u)
 
                     print(f"CASE {k} simulation is done.")
         # This is the log-normal case
@@ -340,11 +342,9 @@ if __name__ == "__main__":
                     dp_stochastic = simu.add_uncertainty(t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip)
                     print(f"Uncertainty added. ({t} distribution with uncertainty {u})")
 
-                    lca = simu.perform_simu(myact, dp_stochastic, activities)
-                    simu.save_result(dir_output, lca, k, myact)
+                    lca = simu.perform_simu(index, dp_stochastic, dir_output, k, myact, t, u)
 
                     print(f"CASE {k} simulation is done.")
-
 
     print("All simulations completed.")
 

@@ -1,2 +1,3 @@
-pip install brightway25 pypardiso
-pip install seaborn
+brightway25 
+pypardiso
+seaborn
