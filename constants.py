@@ -1,0 +1,24 @@
+import os
+
+# BIG DATASET FILE PATH
+BIG_DIR_INPUT = f"{os.getcwd()}/IOT_2022_pxp"
+BIG_DIR_OUTPUT = f"{os.getcwd()}/big_output"
+BIG_A_FILE = f"{os.getcwd()}/IOT_2022_pxp/A.txt"
+BIG_S_FILE = f"{os.getcwd()}/IOT_2022_pxp/satellite/S.txt"
+
+# SMALL DATASET FILE PATH
+SMALL_DIR_INPUT = f"{os.getcwd()}/exiobase_2022_small"
+SMALL_DIR_OUTPUT = f"{os.getcwd()}/small_output"
+BIG_A_FILE = f"{os.getcwd()}/exiobase_2022_small/A.txt"
+BIG_S_FILE = f"{os.getcwd()}/exiobase_2022_small/satellite/S.txt"
+
+# CHOSEN ACTIVITIES
+SMALL_CHOSEN_ACT = [("RoW-Services", 68), ("EU28-Biodiesels", 11), ("EU28-Agriculture-Forestry-Fishing", 0), ("EU28-Basic iron and steel and of ferro-alloys and first products thereof", 13)]
+BIG_CHOSEN_ACT = [("CN-Railway transportation services", 6156), ("DE-Biodiesels", 1093), ("CH-Beverages", 7651), ("SE-Basic iron and steel and of ferro-alloys and first products thereof", 4903)]
+
+# UNCERTAINTY DEFINE
+DIST_TYPE = ["baseline", "uniform", "log-normal"] # Define the types of distribution
+U_UNIFORM = [0.1, 0.2, 0.3] # Define the uncertainty for uniform distribution
+U_LOG = [1.01, 1.1, 2] # Define the uncertainty for log distribution
+AMOUNT = 4 # This is the amount of activities for 1 CASE
+

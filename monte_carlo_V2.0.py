@@ -6,19 +6,11 @@ import pandas as pd
 import numpy as np
 from random import sample
 import os
+from constants import *
 from statistic_analysis import StatisticAnalysis
 
 
 class SimulationScript:
-    def record_bad_line(bad_line):
-        bad_lines = []
-        bad_lines.append((bad_line['index'], bad_line['row']))
-        with open('bad_lines.txt', 'w') as f:
-            for line in bad_lines:
-                f.write(line)
-
-
-
     # Get all activities
     def get_activities(self, A_file_path):
         A_raw = pd.read_csv(A_file_path, sep='\t', low_memory=False)
@@ -282,93 +274,53 @@ class SimulationScript:
 
 if __name__ == "__main__":
     simu = SimulationScript()
-    A_file_path = f"{os.getcwd()}/IOT_2022_pxp/A.txt"
-    simu.get_activities(A_file_path)
-    # --------------------- Configuration --------------------- 
-    dist_type = ["baseline", "uniform", "log-normal"] # Define the types of distribution
-    u_uniform = [0.1, 0.2, 0.3] # Define the uncertainty for uniform distribution
-    u_log = [1.01, 1.1, 2] # Define the uncertainty for log distribution
-    amount = 4 # This is the amount of activities for 1 CASE
 
-    # File paths (small dataset)
-    # dir_input = f"{os.getcwd()}/exiobase_2022_small"
-    # dir_output = f"{os.getcwd()}/output"
-    # A_file_path = f"{os.getcwd()}/exiobase_2022_small/A.txt"
-    # S_file_path = f"{os.getcwd()}/exiobase_2022_small/satellite/S.txt"
-    # chosen_activities = [("RoW-Services", 68), ("EU28-Biodiesels", 11), ("EU28-Agriculture-Forestry-Fishing", 0), ("EU28-Basic iron and steel and of ferro-alloys and first products thereof", 13)]
-    # File paths (big dataset)
-    dir_input = f"{os.getcwd()}/IOT_2022_pxp"
-    dir_output = f"{os.getcwd()}/output"
-    A_file_path = f"{os.getcwd()}/IOT_2022_pxp/A.txt"
-    S_file_path = f"{os.getcwd()}/IOT_2022_pxp/satellite/S.txt"
-    chosen_activities = [("CN-Railway transportation services", 6156), ("DE-Biodiesels", 1093), ("CH-Beverages", 7651), ("SE-Basic iron and steel and of ferro-alloys and first products thereof", 4903)]
+    # ---------- BIG DATASET RUN ---------- 
 
-    # Make sure execute in the right directory
-    if os.getcwd() != dir_input:
-        os.chdir(dir_input)
-    print("Directed to the right directory.")
-
-
-    # --------------------- Simulation --------------------- 
-    simu = SimulationScript()
-
-    # Choose activities (If you want to change the chosen activities, please uncomment the following code.)
-    # activities = simu.get_activities(A_file_path)
-    # chosen_activities = simu.choose_activities(activities, amount)
-    # print("The following activities are chosen:")
-    # for myact, _ in chosen_activities:
-    #     print(myact, end=",")
-    
-    
-    # Adapt matrices for bw
-    A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = simu.build_bw_matrix(A_file_path, S_file_path)
+    # Form matrices for bw
+    A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = simu.build_bw_matrix(BIG_A_FILE, BIG_S_FILE)
     print("Matrices are formatted.")
 
     # Run the simulation
     k = 0
-    for t in dist_type:
+    for t in DIST_TYPE:
         # This is the baseline case
         if t == "baseline":
-            for myact, index in chosen_activities:
+            for myact, index in BIG_CHOSEN_ACT:
                 k += 1
                 print(f"----------- Starting CASE {k}, activity: {myact} -----------")
-                lca = simu.perform_baseline(index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, dir_output, t)
+                lca = simu.perform_baseline(index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, BIG_DIR_OUTPUT, t)
 
                 print(f"CASE {k} simulation is done.")
 
         # This is the uniform case
         elif t == "uniform":
-            for u in u_uniform:
-                for myact, index in chosen_activities:
+            for u in U_UNIFORM:
+                for myact, index in BIG_CHOSEN_ACT:
                     k += 1
                     print(f"----------- Starting CASE {k}, activity: {myact} -----------")
 
-                    # Add uncertainty
-                    dp_stochastic = simu.add_uncertainty(t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip)
-                    print(f"Uncertainty added to CASE {k}")
-
-                    # Perform lca
-                    lca = simu.perform_simu(index, dp_stochastic, dir_output, k, myact, t, u)
-
-                    print(f"CASE {k} simulation is done.")
-        # This is the log-normal case
-        elif t == "log-normal":
-            for u in u_log:
-                for myact, index in chosen_activities:
-                    k += 1
-                    print(f"----------- Starting CASE {k}, activity: {myact} -----------")
                     # Add uncertainty
                     dp_stochastic = simu.add_uncertainty(t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip)
                     print(f"Uncertainty added. ({t} distribution with uncertainty {u})")
 
-                    lca = simu.perform_simu(index, dp_stochastic, dir_output, k, myact, t, u)
+                    # Perform lca
+                    lca = simu.perform_simu(index, dp_stochastic, BIG_DIR_OUTPUT, k, myact, t, u)
+
+                    print(f"CASE {k} simulation is done.")
+        # This is the log-normal case
+        elif t == "log-normal":
+            for u in U_LOG:
+                for myact, index in BIG_CHOSEN_ACT:
+                    k += 1
+                    print(f"----------- Starting CASE {k}, activity: {myact} -----------")
+
+                    # Add uncertainty
+                    dp_stochastic = simu.add_uncertainty(t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip)
+                    print(f"Uncertainty added. ({t} distribution with uncertainty {u})")
+
+                    lca = simu.perform_simu(index, dp_stochastic, BIG_DIR_OUTPUT, k, myact, t, u)
 
                     print(f"CASE {k} simulation is done.")
 
     print("All simulations completed.")
-
-
-    # --------------------- Statistic Analysis --------------------- 
-    # stat = StatisticAnalysis()
-    # stat.simu_plot()
-    # stat.matrix_plot(A, A_IO, B)
