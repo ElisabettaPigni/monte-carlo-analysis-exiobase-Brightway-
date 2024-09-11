@@ -276,7 +276,7 @@ if __name__ == "__main__":
     simu = SimulationScript()
 
     # ---------- BIG DATASET RUN ---------- 
-
+    
     # Form matrices for bw
     A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = simu.build_bw_matrix(BIG_A_FILE, BIG_S_FILE)
     print("Matrices are formatted.")
