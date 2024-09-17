@@ -8,6 +8,7 @@ from random import sample
 import os
 from constants import *
 from statistic_analysis import StatisticAnalysis
+import time
 
 
 class SimulationScript:
@@ -273,6 +274,8 @@ class SimulationScript:
         return
 
 if __name__ == "__main__":
+    start_time = time.time()
+
     simu = SimulationScript()
 
     # ---------- BIG DATASET RUN ---------- 
@@ -324,3 +327,9 @@ if __name__ == "__main__":
                     print(f"CASE {k} simulation is done.")
 
     print("All simulations completed.")
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    elapsed_hour = round(elapsed_time / 60 / 60, 2)
+    print(f"Total execution time(s): {elapsed_time}")
+    print(f"Total execution time(h): {elapsed_hour}")
