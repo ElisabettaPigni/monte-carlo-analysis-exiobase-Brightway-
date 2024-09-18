@@ -4,11 +4,14 @@ import time
 import os
 from constants import *
 from monte_carlo_utility import *
+import threading
 
 
 # ((t, "0", myact, index, k), matrices)
 def process_case(*parallel_param):
-        (t, "0", myact, index, k) = parallel_param[0]
+        print(f"Processing {t}_{u} in thread: {threading.get_ident()}")
+
+        (t, u, myact, index, k) = parallel_param[0]
         matrices = parallel_param[1]
         A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = matrices
 
@@ -16,13 +19,15 @@ def process_case(*parallel_param):
 
         if t == "baseline":
             simu.perform_baseline(index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, BIG_DIR_OUTPUT, t)
-            print()
+            print(f"{t}_{u} simulation is done.")
         elif t == "uniform":
             dp_stochastic = simu.add_uncertainty(t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip)
             simu.perform_simu(index, dp_stochastic, BIG_DIR_OUTPUT, k, myact, t, u)
+            print(f"{t}_{u} simulation is done.")
         elif t == "log-normal":
             dp_stochastic = simu.add_uncertainty(t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip)
             simu.perform_simu(index, dp_stochastic, BIG_DIR_OUTPUT, k, myact, t, u)
+            print(f"{t}_{u} simulation is done.")
 
 
 if __name__ == "__main__":
@@ -42,7 +47,7 @@ if __name__ == "__main__":
             for i in range(len(SMALL_CHOSEN_ACT)):
                 for myact, index in SMALL_CHOSEN_ACT:
                     k += 1
-                    parallel_params.append(((t, "0", myact, index, k), matrices))
+                    parallel_params.append(((t, 0, myact, index, k), matrices))
         elif t == "uniform":
             for u in U_UNIFORM:
                 for myact, index in SMALL_CHOSEN_ACT:
@@ -52,7 +57,7 @@ if __name__ == "__main__":
             for u in U_LOG:
                 for myact, index in SMALL_CHOSEN_ACT:
                     k += 1
-                    parallel_params.append((t, u, myact, index, k), matrices))
+                    parallel_params.append(((t, u, myact, index, k), matrices))
 
     max_workers = os.cpu_count() if os.cpu_count() else 4
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
