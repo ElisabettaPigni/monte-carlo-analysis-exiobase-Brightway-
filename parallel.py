@@ -17,9 +17,8 @@ def process_case(parallel_param):
     simu = SimulationScript()
 
     if t == "baseline":
-        simu.perform_baseline(index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, SMALL_DIR_OUTPUT, t)
+        simu.perform_baseline(index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, SMALL_DIR_OUTPUT, k, t, myact)
         print(f"{t}_{u} simulation is done.")
-        print("-----------------------------")
     elif t == "uniform":
         dp_stochastic = simu.add_uncertainty(t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip)
         simu.perform_simu(index, dp_stochastic, SMALL_DIR_OUTPUT, k, myact, t, u)

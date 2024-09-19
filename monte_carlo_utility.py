@@ -98,7 +98,7 @@ class SimulationScript:
     
 
     # Perform baseline simulation
-    def perform_baseline(self, index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, directory, t):
+    def perform_baseline(self, index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, directory, k, t, myact):
         # Creating a datapackage
         dp_static = bwp.create_datapackage()
         dp_static.add_persistent_vector(
@@ -132,13 +132,14 @@ class SimulationScript:
         os.makedirs(directory, exist_ok=True)  # Create the directory if it does not exist
         filename = os.path.join(directory, f"CASE_{k}_{t}_MC_simulations_{myact}.csv") # Define filename for saving results
 
-        print('ioscore',np.sum(C.dot(B.dot((np.linalg.inv(A_)).dot(f))))) # matrix operation
-        print('LCA score: ', np.around(lca.score, decimals=2))  # similar values, when rounded. All is good
-
+        #print('ioscore',np.sum(C.dot(B.dot((np.linalg.inv(A_)).dot(f))))) # matrix operation
+        #print('LCA score: ', np.around(lca.score, decimals=2))  # similar values, when rounded. All is good
+        
         with open(filename, "w") as file:
-            file.write("kg CO2eq\n") # Write the header
-            file.write(f"{lca.score}") # Write the header
-            print(f"Baseline result saved to {filename}.")
+            file.write("aaa")
+            #            file.write("kg CO2eq\n") # Write the header
+#            file.write(f"{lca.score}")
+#            print(f"Baseline result saved to {filename}.")
 
         return
 
