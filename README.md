@@ -1,19 +1,24 @@
 # Quick start
 ## Run remotely
-1. Clone this repository
+1. Clone this repository.
     ```
     git clone <repo_name>
     cd <repo_folder_name>
     ```
-2. Upload your data to remote machine
-3. Install dependencies
+2. Upload your data to remote machine.
+4. Install dependencies.
     ```
     pip install -r requirements.txt
     ```
-4. Run script
+5. Set up your parameters in `constants.py`.
+6. Run script.
     ```
     python monte_carlo_V2.0.py
     ```
+7. If you want to run cases in parallel, use this command.
+   ```
+    python parallel.py
+   ```
 
 ## Run script
 ```
