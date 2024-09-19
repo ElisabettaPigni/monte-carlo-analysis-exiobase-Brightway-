@@ -1,32 +1,32 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, as_completed
 import threading
 import time
 import os
 from constants import *
 from monte_carlo_utility import *
-import threading
 
 
 # ((t, "0", myact, index, k), matrices)
-def process_case(*parallel_param):
-    print(f"Processing {t}_{u} in thread: {threading.get_ident()}")
-
+def process_case(parallel_param):
     (t, u, myact, index, k) = parallel_param[0]
     matrices = parallel_param[1]
     A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = matrices
 
+    print(f"Processing {t}_{u} in process: {os.getpid()}")
+
     simu = SimulationScript()
 
     if t == "baseline":
-        simu.perform_baseline(index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, BIG_DIR_OUTPUT, t)
+        simu.perform_baseline(index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, SMALL_DIR_OUTPUT, t)
         print(f"{t}_{u} simulation is done.")
+        print("-----------------------------")
     elif t == "uniform":
         dp_stochastic = simu.add_uncertainty(t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip)
-        simu.perform_simu(index, dp_stochastic, BIG_DIR_OUTPUT, k, myact, t, u)
+        simu.perform_simu(index, dp_stochastic, SMALL_DIR_OUTPUT, k, myact, t, u)
         print(f"{t}_{u} simulation is done.")
     elif t == "log-normal":
         dp_stochastic = simu.add_uncertainty(t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip)
-        simu.perform_simu(index, dp_stochastic, BIG_DIR_OUTPUT, k, myact, t, u)
+        simu.perform_simu(index, dp_stochastic, SMALL_DIR_OUTPUT, k, myact, t, u)
         print(f"{t}_{u} simulation is done.")
 
 
@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     simu = SimulationScript()
 
-    A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = simu.build_bw_matrix(BIG_A_FILE, BIG_S_FILE)
+    A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = simu.build_bw_matrix(SMALL_A_FILE, SMALL_S_FILE)
     print("Matrices are formatted.")
 
     matrices = (A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip)
@@ -44,10 +44,9 @@ if __name__ == "__main__":
     k = 0
     for t in DIST_TYPE:
         if t == "baseline":
-            for i in range(len(SMALL_CHOSEN_ACT)):
-                for myact, index in SMALL_CHOSEN_ACT:
-                    k += 1
-                    parallel_params.append(((t, 0, myact, index, k), matrices))
+            for myact, index in SMALL_CHOSEN_ACT:
+                k += 1
+                parallel_params.append(((t, 0, myact, index, k), matrices))
         elif t == "uniform":
             for u in U_UNIFORM:
                 for myact, index in SMALL_CHOSEN_ACT:
@@ -58,13 +57,11 @@ if __name__ == "__main__":
                 for myact, index in SMALL_CHOSEN_ACT:
                     k += 1
                     parallel_params.append(((t, u, myact, index, k), matrices))
-
+    
     max_workers = os.cpu_count() if os.cpu_count() else 4
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+    with ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(process_case, parallel_param): parallel_param for parallel_param in parallel_params}
 
     end_time = time.time()
     elapsed_time = end_time - start_time
-    elapsed_hour = round(elapsed_time / 60 / 60, 2)
     print(f"Total execution time(s): {elapsed_time}")
-    print(f"Total execution time(h): {elapsed_hour}")
