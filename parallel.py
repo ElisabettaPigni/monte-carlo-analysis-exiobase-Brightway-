@@ -9,25 +9,25 @@ import threading
 
 # ((t, "0", myact, index, k), matrices)
 def process_case(*parallel_param):
-        print(f"Processing {t}_{u} in thread: {threading.get_ident()}")
+    print(f"Processing {t}_{u} in thread: {threading.get_ident()}")
 
-        (t, u, myact, index, k) = parallel_param[0]
-        matrices = parallel_param[1]
-        A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = matrices
+    (t, u, myact, index, k) = parallel_param[0]
+    matrices = parallel_param[1]
+    A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = matrices
 
-        simu = SimulationScript()
+    simu = SimulationScript()
 
-        if t == "baseline":
-            simu.perform_baseline(index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, BIG_DIR_OUTPUT, t)
-            print(f"{t}_{u} simulation is done.")
-        elif t == "uniform":
-            dp_stochastic = simu.add_uncertainty(t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip)
-            simu.perform_simu(index, dp_stochastic, BIG_DIR_OUTPUT, k, myact, t, u)
-            print(f"{t}_{u} simulation is done.")
-        elif t == "log-normal":
-            dp_stochastic = simu.add_uncertainty(t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip)
-            simu.perform_simu(index, dp_stochastic, BIG_DIR_OUTPUT, k, myact, t, u)
-            print(f"{t}_{u} simulation is done.")
+    if t == "baseline":
+        simu.perform_baseline(index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, BIG_DIR_OUTPUT, t)
+        print(f"{t}_{u} simulation is done.")
+    elif t == "uniform":
+        dp_stochastic = simu.add_uncertainty(t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip)
+        simu.perform_simu(index, dp_stochastic, BIG_DIR_OUTPUT, k, myact, t, u)
+        print(f"{t}_{u} simulation is done.")
+    elif t == "log-normal":
+        dp_stochastic = simu.add_uncertainty(t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip)
+        simu.perform_simu(index, dp_stochastic, BIG_DIR_OUTPUT, k, myact, t, u)
+        print(f"{t}_{u} simulation is done.")
 
 
 if __name__ == "__main__":
