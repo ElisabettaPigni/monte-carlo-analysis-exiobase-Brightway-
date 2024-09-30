@@ -19,6 +19,6 @@ BIG_CHOSEN_ACT = [("CN-Railway transportation services", 6156), ("DE-Biodiesels"
 # UNCERTAINTY DEFINE
 DIST_TYPE = ["baseline", "uniform", "log-normal"] # Define the types of distribution
 U_UNIFORM = [0.1, 0.2, 0.3] # Define the uncertainty for uniform distribution
-U_LOG = [1.01, 1.1, 2] # Define the uncertainty for log distribution
+U_LOG = [1.1, 1.2, 1.3] # Define the uncertainty for log distribution
 AMOUNT = 4 # This is the amount of activities for 1 CASE
 
