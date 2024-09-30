@@ -20,14 +20,32 @@
     python parallel.py
    ```
 
-## Run script
-```
-# Run simulations
-python monte_carlo_V2.0.py
+## Run locally
+1. Check current directory
+   ```
+    pwd
+   ```
+2. Move to the desire directory
+   ```
+    cd "<relative path>"
+   ```
+3. Make a new folder to store scripts
+    ```
+    mkdir <folder name>
+    ```
+4. Clone the repository
+    ```
+    git clone <HTTPS URL>
+    ```
+5. Run the simulation (non-parallel)
+    ```
+    python monte_carlo_V2.0.py
+    ```
+6. Run plot script
+    ```
+    python statistic_analysis.py
+    ```
 
-# Run graphical analysis
-python statistic_analysis.py
-```
 
 ## Description
 - 20240805-Import-exio3big-and-monte-carlo-bw25.py: This is the origin script from ElisabettaPigni.
