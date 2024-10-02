@@ -310,7 +310,7 @@ class SimulationScript:
         plt.xlabel("Scenarios")
         plt.ylabel("kg CO2eq")
 
-        if compare_type == "cases": # means one plot include all cases
+        if compare_type == "cases": # means one plot includes all cases
             for sector in data["sector"].unique():
                 sb.boxplot(x=data["case"], y=data["kg CO2eq"], hue="case", data=data, palette="Set2")
                 plt_title = "_".join([sector, f"(exiobase_{database_type})"])
