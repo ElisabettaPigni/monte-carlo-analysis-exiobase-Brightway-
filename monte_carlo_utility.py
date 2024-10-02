@@ -7,8 +7,10 @@ import numpy as np
 from random import sample
 import os
 from constants import *
-from statistic_analysis import StatisticAnalysis
-import time
+import matplotlib.pyplot as plt
+import seaborn as sb
+from matplotlib.ticker import FuncFormatter
+from constants import *
 
 
 class SimulationScript:
@@ -140,8 +142,6 @@ class SimulationScript:
             file.write(f"{lca.score}")
             print(f"Baseline result saved to {filename}.")
 
-        return
-
 
     # Ready the matries for simulation
     def add_uncertainty(self, t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip):
@@ -270,6 +270,61 @@ class SimulationScript:
                 print(f"Batch {p} saved to {filename}.")
 
         print(f"Results saved to {filename}.")
-        
-        return
 
+
+    def get_plot(self, folder_path, database_type):
+        data = pd.DataFrame()
+   
+        for folder in os.listdir(folder_path):
+            # only choose one dataset at a time
+            if database_type in folder:
+                path = os.path.join(folder_path, folder)
+
+                # iterate all cases
+                for file in os.listdir(path):
+                    if file.endswith(".csv"):
+                        file_path = os.path.join(path, file)
+                        print(f"Reading file: {file}")
+                        df = pd.read_csv(file_path)
+                        df["case"] = "_".join(file.split("_")[2:4])
+                        df["sector"] = file.split("_")[-1].split(".")[0]
+                        data = pd.concat([data, df], ignore_index=True) # concatenate data for all the cases
+
+        print(f"Check cases: {data['case'].unique()}")
+        print(f"Check row numbers: {len(data)}")
+        print(f"Check column numbers: {len(data.columns)}")
+
+        return data
+
+
+    def draw_plot(self, data, compare_type, database_type, save_path):
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        def scientific_format(x, pos):
+            return f'{x:.2e}'
+        formatter = FuncFormatter(scientific_format)
+        plt.gca().yaxis.set_major_formatter(formatter)
+
+        plt.figure(figsize=(12, 8))
+        plt.xlabel("Scenarios")
+        plt.ylabel("kg CO2eq")
+
+        if compare_type == "cases": # means one plot include all cases
+            for sector in data["sector"].unique():
+                sb.boxplot(x=data["case"], y=data["kg CO2eq"], hue="case", data=data, palette="Set2")
+                plt_title = "_".join([sector, f"(exiobase_{database_type})"])
+                plt.title(plt_title)
+
+                plt_name = f"MC_Comparison_{compare_type}_{plt_title}.png"
+                plt.savefig(os.path.join(save_path, plt_name))
+        elif compare_type == "sectors": # means one plot includes all sectors
+            for case in data["case"].unique():
+                sb.boxplot(x=data["sector"], y=data["kg CO2eq"], hue="sector", data=data, palette="Set2")
+                plt_title = "_".join([case, f"(exiobase_{database_type})"])
+                plt.title(plt_title)
+
+                plt_name = f"MC_Comparison_{compare_type}_{plt_title}.png"
+                plt.savefig(os.path.join(save_path, plt_name))
+
+        plt.close() # to free memory
