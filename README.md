@@ -43,14 +43,16 @@
     ```
 6. Run plot script
     ```
-    python statistic_analysis.py
+    python monte_carlo_V2.0.py
     ```
 
-
 ## Description
-- 20240805-Import-exio3big-and-monte-carlo-bw25.py: This is the origin script from ElisabettaPigni.
-- monte_carlo_V2.0.py: This script is for simulation and result saving.
-- statistic_analysis.py: This script is used to perform graphical analysis of the data.
+- `20240805-Import-exio3big-and-monte-carlo-bw25.py`: This is the origin script from ElisabettaPigni.
+- `monte_carlo_utility.py`: All functionality is implemented here.
+- `monte_carlo_V2.0.py`: This is the entry file for run simulations or draw plots.
+- `constants.py`: Include all the constants.
+- `parallel.py`: This is the entry file for run simulations in parallel.
+- `requirements.txt`: Include all the dependencies.
 
 ### Reference:  
 - [Brightway Installation](https://docs.brightway.dev/en/latest/content/installation/index.html)  
