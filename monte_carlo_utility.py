@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sb
 from matplotlib.ticker import FuncFormatter
 from constants import *
+import textwrap
 
 
 class SimulationScript:
@@ -275,13 +276,13 @@ class SimulationScript:
     def get_plot(self, folder_path, database_type):
         data = pd.DataFrame()
    
-        for folder in os.listdir(folder_path):
+        for folder in sorted(os.listdir(folder_path)):
             # only choose one dataset at a time
             if database_type in folder:
                 path = os.path.join(folder_path, folder)
 
                 # iterate all cases
-                for file in os.listdir(path):
+                for file in sorted(os.listdir(path)):
                     if file.endswith(".csv"):
                         file_path = os.path.join(path, file)
                         print(f"Reading file: {file}")
@@ -304,27 +305,35 @@ class SimulationScript:
         def scientific_format(x, pos):
             return f'{x:.2e}'
         formatter = FuncFormatter(scientific_format)
-        plt.gca().yaxis.set_major_formatter(formatter)
-
-        plt.figure(figsize=(12, 8))
-        plt.xlabel("Scenarios")
-        plt.ylabel("kg CO2eq")
 
         if compare_type == "cases": # means one plot includes all cases
             for sector in data["sector"].unique():
-                sb.boxplot(x=data["case"], y=data["kg CO2eq"], hue="case", data=data, palette="Set2")
+                filtered_data = data[data["sector"] == sector].copy()
+                
+                plt.figure(figsize=(12, 10))
+                plt.xlabel("Scenarios")
+                plt.ylabel("kg CO2eq")
+                sb.boxplot(x=filtered_data["case"], y=filtered_data["kg CO2eq"], hue=None, data=filtered_data, palette="Set2")
                 plt_title = "_".join([sector, f"(exiobase_{database_type})"])
                 plt.title(plt_title)
-
                 plt_name = f"MC_Comparison_{compare_type}_{plt_title}.png"
+                
+                plt.gca().yaxis.set_major_formatter(formatter)
                 plt.savefig(os.path.join(save_path, plt_name))
+                
+                plt.close() # to free memory
         elif compare_type == "sectors": # means one plot includes all sectors
             for case in data["case"].unique():
-                sb.boxplot(x=data["sector"], y=data["kg CO2eq"], hue="sector", data=data, palette="Set2")
+                filtered_data = data[data["case"] == case].copy()
+                plt.figure(figsize=(12, 10))
+                plt.xlabel("Scenarios")
+                plt.ylabel("kg CO2eq")
+                sb.boxplot(x=filtered_data["sector"].apply(lambda x: "\n".join(textwrap.wrap(x, width=20))), y=filtered_data["kg CO2eq"], hue=None, data=filtered_data, palette="Set2")
                 plt_title = "_".join([case, f"(exiobase_{database_type})"])
                 plt.title(plt_title)
-
                 plt_name = f"MC_Comparison_{compare_type}_{plt_title}.png"
+
+                plt.gca().yaxis.set_major_formatter(formatter)
                 plt.savefig(os.path.join(save_path, plt_name))
 
-        plt.close() # to free memory
+                plt.close() # to free memory
