@@ -19,9 +19,11 @@ SMALL_CHOSEN_ACT = [("RoW-Services", 68), ("EU28-Biodiesels", 11), ("EU28-Agricu
 BIG_CHOSEN_ACT = [("CN-Railway transportation services", 6156), ("DE-Biodiesels", 1093), ("CH-Beverages", 7651), ("SE-Basic iron and steel and of ferro-alloys and first products thereof", 4903)]  # [6156, 1093, 7651, 4903]
 
 # UNCERTAINTY DEFINE
-DIST_TYPE = ["baseline", "uniform", "log-normal"] # Define the types of distribution
+# DIST_TYPE = ["baseline", "uniform", "log-normal"] # Define the types of distribution
+DIST_TYPE = ["log-normal"]
 U_UNIFORM = [0.1, 0.2, 0.3] # Define the uncertainty for uniform distribution
-U_LOG = [1.1, 1.2, 1.3] # Define the uncertainty for log distribution
+# U_LOG = [1.1, 1.2, 1.3] # Define the uncertainty for log distribution
+U_LOG = [1.106, 1.225, 1.363]
 AMOUNT = 4 # This is the amount of activities for 1 CASE
 
 # ---------- PARAMETERS FOR PLOT DRAWING ---------- 
