@@ -136,7 +136,7 @@ class SimulationScript:
         filename = os.path.join(directory, f"CASE_{k}_{t}_MC_simulations_{myact}.csv") # Define filename for saving results
 
         print('ioscore',np.sum(C.dot(B.dot((np.linalg.inv(A_)).dot(f))))) # matrix operation
-        print('LCA score: ', np.around(lca.score, decimals=2))  # similar values, when rounded. All is good
+        print('LCA score: ', lca.score)  # similar values, when rounded. All is good
         
         with open(filename, "w") as file:
             file.write("kg CO2eq\n") # Write the header
@@ -246,7 +246,7 @@ class SimulationScript:
         lca.lci()
         lca.lcia()
 
-        print('LCA score: ', np.around(lca.score, decimals=2))
+        print('LCA score: ', lca.score)
 
         os.makedirs(directory, exist_ok=True)  # Create the directory if it does not exist
         filename = os.path.join(directory, f"CASE_{k}_{t}_{u}_MC_simulations_{myact}.csv") # Define filename for saving results
@@ -259,7 +259,7 @@ class SimulationScript:
             file.write("kg CO2eq\n") # Write the header
             for p in range(num_batches):
                 # Run simulations for the current batch
-                batch_results = [np.around(lca.score, decimals=2) for _ in zip(range(batch_size), lca)]
+                batch_results = [lca.score for _ in zip(range(batch_size), lca)]
                 
                 # Convert to DataFrame
                 df_batch = pd.DataFrame(batch_results, columns=["kg CO2eq"])
