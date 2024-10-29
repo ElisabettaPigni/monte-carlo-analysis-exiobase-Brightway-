@@ -11,9 +11,9 @@ def process_case(parallel_param):
     parallel_param type: tuple
     parallel_param format: ((t, "0", myact, index, k), matrices)
     """
+    (t, u, myact, index, k) = parallel_param[0]
     print(f"Processing {t}_{u} in process: {os.getpid()}")
 
-    (t, u, myact, index, k) = parallel_param[0]
     matrices = parallel_param[1]
     A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = matrices
 
