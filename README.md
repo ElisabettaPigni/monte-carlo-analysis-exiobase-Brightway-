@@ -57,6 +57,7 @@
 - `constants.py`: Include all the constants.
 - `parallel.py`: This is the entry file for run simulations in parallel.
 - `requirements.txt`: Include all the dependencies.
+- `activities_big_dataset.csv` All activities from big exiobase.
 
 ### Reference:  
 - [Brightway Installation](https://docs.brightway.dev/en/latest/content/installation/index.html)  
