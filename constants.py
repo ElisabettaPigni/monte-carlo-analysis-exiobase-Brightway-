@@ -15,8 +15,14 @@ SMALL_A_FILE = os.path.join(os.getcwd(), "exiobase_2022_small", "A.txt")
 SMALL_S_FILE = os.path.join(os.getcwd(), "exiobase_2022_small", "satellite", "S.txt")
 
 # CHOSEN ACTIVITIES
-SMALL_CHOSEN_ACT = [("RoW-Services", 68), ("EU28-Biodiesels", 11), ("EU28-Agriculture-Forestry-Fishing", 0), ("EU28-Basic iron and steel and of ferro-alloys and first products thereof", 13)]
-BIG_CHOSEN_ACT = [("CN-Railway transportation services", 6156), ("DE-Biodiesels", 1093), ("CH-Beverages", 7651), ("SE-Basic iron and steel and of ferro-alloys and first products thereof", 4903)]  # [6156, 1093, 7651, 4903]
+# -------This is the activities chosen for the first batch of experiments.----------
+# SMALL_CHOSEN_ACT = [("RoW-Services", 68), ("EU28-Biodiesels", 11), ("EU28-Agriculture-Forestry-Fishing", 0), ("EU28-Basic iron and steel and of ferro-alloys and first products thereof", 13)]
+# BIG_CHOSEN_ACT = [("CN-Railway transportation services", 6156), ("DE-Biodiesels", 1093), ("CH-Beverages", 7651), ("SE-Basic iron and steel and of ferro-alloys and first products thereof", 4903)]  # [6156, 1093, 7651, 4903]
+
+# -------This is the activities chosen for the second batch of experiments.----------
+BIG_CHOSEN_ACT = [('DE-Paraffin Waxes', 1081), ('RU-Food waste for treatment: incineration', 7375), ('NO-Other services (93)', 8397), ('AT-Office machinery and computers (30)', 118)]
+
+
 
 # UNCERTAINTY DEFINE
 # DIST_TYPE = ["baseline", "uniform", "log-normal"] # Define the types of distribution
