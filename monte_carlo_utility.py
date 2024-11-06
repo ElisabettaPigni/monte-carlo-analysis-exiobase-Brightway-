@@ -1,7 +1,13 @@
-import bw_processing as bwp #this is needed for brightway 2.5 package
-import bw2calc as bc #this is needed for brightway 2.5 package
-import bw2data as bd #this is needed for brightway 2.5 package
-from scipy import sparse #This is necessary to create the sparse matrix, which is a lighter matrix in which zero values have been removed.
+'''
+ # @ Author: Ning An
+ # @ Create Time: 2024-10-29 20:19:31
+ # @ Modified by: Ning An
+ # @ Modified time: 2024-11-06 10:01:48
+ '''
+
+import bw_processing as bwp
+import bw2calc as bc
+from scipy import sparse
 import pandas as pd
 import numpy as np
 from random import sample
@@ -16,7 +22,7 @@ import textwrap
 
 class SimulationScript:
     # Get all activities
-    def get_activities(self, A_file_path):
+    def get_activities(self, A_file_path: str) -> list:
         A_raw = pd.read_csv(A_file_path, sep='\t', low_memory=False)
         countries = A_raw['region'].drop_duplicates().iloc[2:].tolist()
         sectors = list(A_raw.iloc[2:,1].drop_duplicates())
@@ -26,14 +32,19 @@ class SimulationScript:
 
 
     # Choose activities for experiments
-    def choose_activities(self, activities, amount):
+    def choose_activities(self, activities: list, amount: int) -> list:
         chosen_activities = []
         indices = sample(range(len(activities) - 1), amount)
-
         chosen_activities = [(activities[i], i) for i in indices]
 
         return chosen_activities
     
+    # Get corresponding index for activity
+    def get_index(self, activities: list, activity_name: str) -> int:
+        index = activities.index(activity_name)
+        
+        return index
+
 
     # Build matrix adapt to bw
     def build_bw_matrix(self, A_file_path, S_file_path):
