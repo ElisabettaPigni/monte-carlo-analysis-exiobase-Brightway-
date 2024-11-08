@@ -285,7 +285,26 @@ class SimulationScript:
         print(f"Results saved to {filename}.")
 
 
-    def get_plot(self, folder_path, database_type):
+    def concate_files(self, folder_path):
+        """
+        Merge all columns from all files in a folder(exis=0).
+        """
+        data = pd.DataFrame()
+        for file in sorted(os.listdir(folder_path)):
+            if "CASE" in file:
+                file_path = os.path.join(folder_path, file)
+                df = pd.read_csv(file_path)
+                old_column_name = "kg CO2eq"
+                df.rename(columns={old_column_name: os.path.splitext(file)[0]}, inplace=True)
+                data = pd.concat([data, df], axis=1)
+            data.to_csv(f"{folder_path}/all_results.csv", index=False)
+
+
+    def collect_data(self, folder_path, database_type):
+        """
+        Merge all columns from all files in a folder(axis=1), ready for plot drawing.
+        Note: This function is used when you have a folder hierarchy.
+        """
         data = pd.DataFrame()
    
         for folder in sorted(os.listdir(folder_path)):
@@ -302,6 +321,29 @@ class SimulationScript:
                         df["case"] = "_".join(file.split("_")[2:4])
                         df["sector"] = file.split("_")[-1].split(".")[0]
                         data = pd.concat([data, df], ignore_index=True) # concatenate data for all the cases
+
+        print(f"Check cases: {data['case'].unique()}")
+        print(f"Check row numbers: {len(data)}")
+        print(f"Check column numbers: {len(data.columns)}")
+
+        return data
+
+
+    def collect_data2(self, folder_path):
+        """
+        Merge all columns from all files in a folder(axis=1), ready for plot drawing.
+        Note: This function is used when you have all files in one folder.
+        """
+        data = pd.DataFrame()
+   
+        for file in os.listdir(folder_path):
+            if file.endswith(".csv"):
+                file_path = os.path.join(folder_path, file)
+                print(f"Reading file: {file}")
+                df = pd.read_csv(file_path)
+                df["case"] = "_".join(file.split("_")[2:4]) # get the uncertainty type and number
+                df["sector"] = file.split("_")[-1].split(".")[0] # get the sector name
+                data = pd.concat([data, df], ignore_index=True) # concatenate data for all the cases
 
         print(f"Check cases: {data['case'].unique()}")
         print(f"Check row numbers: {len(data)}")
