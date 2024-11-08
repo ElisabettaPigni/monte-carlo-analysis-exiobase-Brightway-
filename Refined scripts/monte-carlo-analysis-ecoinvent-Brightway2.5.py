@@ -60,8 +60,6 @@ def plot_monte_carlo_results(results, xlabel='lca.score'):
     plt.show()
 
 
-# S1: Test without the foreground system
-
 def run_scenario_noTSF():
     """Run LCA without the foreground system (TSF)."""
     electricity = bd.Database("ecoinvent-3.9-consequential").get("a435daf86e858232e75f32771d785f83")
@@ -82,9 +80,6 @@ def run_scenario_noTSF():
     
     return mc_results_noTSF
 
-mc_results_noTSF = run_scenario_noTSF()
-
-# S2: Test with the foreground system (TSF) and the pedigree matrix for the foreground
 
 def run_scenario_with_TSF():
     """Run LCA with the foreground system (TSF) using the provided foreground database."""
@@ -114,43 +109,50 @@ def run_scenario_with_TSF():
     
     return mc_results
 
-mc_results_with_TSF = run_scenario_with_TSF()
 
-# Comparison between the uncertainty range of the results with and without TSF
+if __name__ == "__main__":
 
-# Calculate descriptive statistics
-stats_noTSF = descriptive_stats(mc_results_noTSF)
-stats_with_TSF = descriptive_stats(mc_results_with_TSF)
-
-print("\nDescriptive statistics for scenario without TSF:")
-for stat_name, value in stats_noTSF.items():
-    print(f"{stat_name}: {value}")
-
-print("\nDescriptive statistics for scenario with TSF:")
-for stat_name, value in stats_with_TSF.items():
-    print(f"{stat_name}: {value}")
-
-# Prepare data for comparison plot
-comparison_unc_with_and_without_TSF = pd.DataFrame({
-    'noTSF': mc_results_noTSF,
-    'with_TSF': mc_results_with_TSF
-})
-
-# Plot comparison
-plt.figure(figsize=(12, 8))
-plt.boxplot(
-    [comparison_unc_with_and_without_TSF['noTSF'], comparison_unc_with_and_without_TSF['with_TSF']],
-    labels=['noTSF', 'with_TSF'], 
-    patch_artist=True,
-    boxprops=dict(facecolor='lightblue', color='black'),
-    medianprops=dict(color='red'),
-    whiskerprops=dict(color='black'),
-    capprops=dict(color='black'),
-    flierprops=dict(marker='o', color='black', alpha=0.5)
-)
-plt.xlabel('Scenarios')
-plt.ylabel('kg CO2eq')
-plt.title('Uncertainty Range Comparison')
-plt.gca().yaxis.set_major_formatter(FuncFormatter(scientific_format))
-plt.tight_layout()
-plt.show()
+    # S1: Test without the foreground system
+    mc_results_noTSF = run_scenario_noTSF()
+    
+    # S2: Test with the foreground system (TSF) and the pedigree matrix for the foreground
+    mc_results_with_TSF = run_scenario_with_TSF()
+    
+    # Comparison between the uncertainty range of the results with and without TSF
+    
+    # Calculate descriptive statistics
+    stats_noTSF = descriptive_stats(mc_results_noTSF)
+    stats_with_TSF = descriptive_stats(mc_results_with_TSF)
+    
+    print("\nDescriptive statistics for scenario without TSF:")
+    for stat_name, value in stats_noTSF.items():
+        print(f"{stat_name}: {value}")
+    
+    print("\nDescriptive statistics for scenario with TSF:")
+    for stat_name, value in stats_with_TSF.items():
+        print(f"{stat_name}: {value}")
+    
+    # Prepare data for comparison plot
+    comparison_unc_with_and_without_TSF = pd.DataFrame({
+        'noTSF': mc_results_noTSF,
+        'with_TSF': mc_results_with_TSF
+    })
+    
+    # Plot comparison
+    plt.figure(figsize=(12, 8))
+    plt.boxplot(
+        [comparison_unc_with_and_without_TSF['noTSF'], comparison_unc_with_and_without_TSF['with_TSF']],
+        labels=['noTSF', 'with_TSF'], 
+        patch_artist=True,
+        boxprops=dict(facecolor='lightblue', color='black'),
+        medianprops=dict(color='red'),
+        whiskerprops=dict(color='black'),
+        capprops=dict(color='black'),
+        flierprops=dict(marker='o', color='black', alpha=0.5)
+    )
+    plt.xlabel('Scenarios')
+    plt.ylabel('kg CO2eq')
+    plt.title('Uncertainty Range Comparison')
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(scientific_format))
+    plt.tight_layout()
+    plt.show()
