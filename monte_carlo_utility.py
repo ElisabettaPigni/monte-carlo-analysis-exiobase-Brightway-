@@ -19,6 +19,7 @@ import seaborn as sb
 from matplotlib.ticker import FuncFormatter
 from constants import *
 import textwrap
+import re
 
 
 class SimulationScript:
@@ -284,13 +285,20 @@ class SimulationScript:
 
         print(f"Results saved to {filename}.")
 
+    
+    def sort_file(self, file_list):
+        for file in file_list:
+            match = re.search(r'\d+', file)
+            return int(match.group()) if match else float('inf')
+
 
     def concate_files(self, folder_path):
         """
         Merge all columns from all files in a folder(exis=0).
         """
         data = pd.DataFrame()
-        for file in sorted(os.listdir(folder_path)):
+        sorted_files = sorted(os.listdir(folder_path), key=self.sort_file)
+        for file in sorted_files:
             if "CASE" in file:
                 file_path = os.path.join(folder_path, file)
                 df = pd.read_csv(file_path)
@@ -306,14 +314,13 @@ class SimulationScript:
         Note: This function is used when you have a folder hierarchy.
         """
         data = pd.DataFrame()
-   
-        for folder in sorted(os.listdir(folder_path)):
+        sorted_folders = sorted(os.listdir(folder_path), key=self.sort_file)
+        for folder in sorted_folders:
             # only choose one dataset at a time
             if database_type in folder:
                 path = os.path.join(folder_path, folder)
-
-                # iterate all cases
-                for file in sorted(os.listdir(path)):
+                sorted_files = sorted(os.listdir(path), key=self.sort_file)
+                for file in sorted_files:
                     if file.endswith(".csv"):
                         file_path = os.path.join(path, file)
                         print(f"Reading file: {file}")
@@ -329,20 +336,22 @@ class SimulationScript:
         return data
 
 
-    def collect_data2(self, folder_path):
+    def collect_data_direct(self, folder_path):
         """
         Merge all columns from all files in a folder(axis=1), ready for plot drawing.
         Note: This function is used when you have all files in one folder.
         """
         data = pd.DataFrame()
-   
-        for file in os.listdir(folder_path):
+        sorted_folders = sorted(os.listdir(folder_path), key=self.sort_file)
+        for file in sorted_folders:
             if file.endswith(".csv"):
                 file_path = os.path.join(folder_path, file)
-                print(f"Reading file: {file}")
+                # print(f"Reading file: {file}")
                 df = pd.read_csv(file_path)
                 df["case"] = "_".join(file.split("_")[2:4]) # get the uncertainty type and number
-                df["sector"] = file.split("_")[-1].split(".")[0] # get the sector name
+                match = re.search(r'simulations_(.*)\.csv', file)
+                df["sector"] = match.group(1) if match else print("Sector name not founded.")
+                # print(df["sector"].unique())
                 data = pd.concat([data, df], ignore_index=True) # concatenate data for all the cases
 
         print(f"Check cases: {data['case'].unique()}")
@@ -360,21 +369,20 @@ class SimulationScript:
             return f'{x:.2e}'
         formatter = FuncFormatter(scientific_format)
 
-        if compare_type == "cases": # means one plot includes all cases
+        if compare_type == "cases": # means one plot includes all uncertainty cases for one sector
             for sector in data["sector"].unique():
                 filtered_data = data[data["sector"] == sector].copy()
                 
                 plt.figure(figsize=(12, 10))
                 plt.xlabel("Scenarios")
                 plt.ylabel("kg CO2eq")
-                sb.boxplot(x=filtered_data["case"], y=filtered_data["kg CO2eq"], hue=None, data=filtered_data, palette="Set2")
+                x_order = ["baseline_MC", "log-normal_1.106", "log-normal_1.225", "log-normal_1.363", "uniform_0.1", "uniform_0.2", "uniform_0.3"]
+                sb.boxplot(x=filtered_data["case"], y=filtered_data["kg CO2eq"], data=filtered_data, order=x_order, hue="case", palette="Set2")
                 plt_title = "_".join([sector, f"(exiobase_{database_type})"])
                 plt.title(plt_title)
-                plt_name = f"MC_Comparison_{compare_type}_{plt_title}.png"
-                
+                plt_name = f"MC_{plt_title}_{compare_type}.png"
                 plt.gca().yaxis.set_major_formatter(formatter)
                 plt.savefig(os.path.join(save_path, plt_name))
-                
                 plt.close() # to free memory
         elif compare_type == "sectors": # means one plot includes all sectors
             for case in data["case"].unique():
@@ -382,12 +390,18 @@ class SimulationScript:
                 plt.figure(figsize=(12, 10))
                 plt.xlabel("Scenarios")
                 plt.ylabel("kg CO2eq")
-                sb.boxplot(x=filtered_data["sector"].apply(lambda x: "\n".join(textwrap.wrap(x, width=20))), y=filtered_data["kg CO2eq"], hue=None, data=filtered_data, palette="Set2")
+                if database_type == "big":
+                    x_order = ["DE-Paraffin_Waxes", "RU-Food_waste_for_treatment__incineration", "NO-Other_services_(93)", "AT-Office_machinery_and_computers_(30)"]
+                else:
+                    x_order = ["EU28-Energy", "RoW-Waste_management", "EU28-Services", "EU28-Industry"]
+                sb.boxplot(x=filtered_data["sector"], y=filtered_data["kg CO2eq"], data=filtered_data, order=x_order, hue="sector", palette="Set2")
                 plt_title = "_".join([case, f"(exiobase_{database_type})"])
                 plt.title(plt_title)
-                plt_name = f"MC_Comparison_{compare_type}_{plt_title}.png"
-
+                plt.xticks(
+                    ticks=range(len(x_order)), 
+                    labels=["\n".join(textwrap.wrap(label, width=21)) for label in x_order],
+                )
+                plt_name = f"MC_{plt_title}_{compare_type}.png"
                 plt.gca().yaxis.set_major_formatter(formatter)
                 plt.savefig(os.path.join(save_path, plt_name))
-
                 plt.close() # to free memory
