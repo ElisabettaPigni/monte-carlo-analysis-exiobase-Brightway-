@@ -23,50 +23,60 @@ import re
 
 
 class SimulationScript:
-    # Get all activities
+    def check(self, ):
+        """
+        Before run the simulation, check everything is ready.
+        """
+        pass
+
     def get_activities(self, A_file_path: str) -> list:
+        """
+        Form activities by combing <country_name> and <sector_name>.
+        """
         A_raw = pd.read_csv(A_file_path, sep='\t', low_memory=False)
         countries = A_raw['region'].drop_duplicates().iloc[2:].tolist()
         sectors = list(A_raw.iloc[2:,1].drop_duplicates())
         activities = [ x + '-' + y for x in countries for y in sectors]
-
         return activities
 
-
-    # Choose activities for experiments
     def choose_activities(self, activities: list, amount: int) -> list:
+        """
+        Choose activities randomly.
+        """
         chosen_activities = []
         indices = sample(range(len(activities) - 1), amount)
         chosen_activities = [(activities[i], i) for i in indices]
-
         return chosen_activities
     
-    # Get corresponding index for activity
     def get_index(self, activities: list, activity_name: str) -> int:
+        """
+        Get corresponding index for an activity.
+        """
         index = activities.index(activity_name)
-        
         return index
+    
+    def build_bw_matrix_add(self, A_file_path, S_file_path):
+        pass
 
-
-    # Build matrix adapt to bw
     def build_bw_matrix(self, A_file_path, S_file_path):
-        activities = self.get_activities(A_file_path) # Get all activities
+        """
+        Build matrix for brightway
+        """
+        activities = self.get_activities(A_file_path)
 
         A_raw = pd.read_csv(A_file_path, sep='\t', low_memory=False)
         A_IO = A_raw.iloc[2:,2:].astype('float').values
         I = np.identity(len(A_IO))
         A_ = I - A_IO
         A = -A_
-        np.fill_diagonal(A, -A.diagonal()) # then change back again, but only the diagonal
+        np.fill_diagonal(A, -A.diagonal())
 
-        Asparse = sparse.coo_array(A) # technology matrix A as sparse object and then coordinates
-        a_data = Asparse.data # amounts or values
-        a_indices = np.array([tuple(coord) for coord in np.transpose(Asparse.nonzero())], dtype=bwp.INDICES_DTYPE) # indices of each exchange
-        a_flip = np.array([False if i[0] == i[1] else True for i in a_indices ]) # Numerical sign of the inputs needs to be flipped negative
+        Asparse = sparse.coo_array(A)
+        a_data = Asparse.data
+        a_indices = np.array([tuple(coord) for coord in np.transpose(Asparse.nonzero())], dtype=bwp.INDICES_DTYPE)
+        a_flip = np.array([False if i[0] == i[1] else True for i in a_indices ])
 
-        # import environemntal extensions
         S_raw = pd.read_csv(S_file_path, header=[0,1], index_col=[0], sep='\t', low_memory=False)
-
         GHG_rows = ["CO2 - combustion - air",
                     "CO2 - non combustion - Cement production - air",
                     "CO2 - non combustion - Lime production - air",
@@ -88,34 +98,29 @@ class SimulationScript:
                     "N2O - agriculture - air",
                     "HFC - air",
                     "SF6 - air"]
-
         S = S_raw.loc[GHG_rows]
 
         B = S.to_numpy()
-
-        Bsparse = sparse.coo_array(B) # Intervention matrix B as sparse object and then coordinates
-        b_data = Bsparse.data # amounts or values
-        b_indices_remap = [[i[0] + len(activities),i[1]] for i in np.transpose(Bsparse.nonzero())] # need to make sure biosphere indices are different from technosphere
+        Bsparse = sparse.coo_array(B)
+        b_data = Bsparse.data
+        b_indices_remap = [[i[0] + len(activities),i[1]] for i in np.transpose(Bsparse.nonzero())]
         b_indices = np.array([tuple(coord) for coord in b_indices_remap], dtype=bwp.INDICES_DTYPE)
 
-        # matrix of charachterisation factors (method E.F. 3.1 - Climate change): CFs = [bw.ef.co2, bw.sox, ..., ]
         CFs = [1., 29.8, 273., 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 1., 1., 25200., 14600., 29.8, 1., 273., 29.8, 1., 1.]
-
         C = np.matrix(np.zeros((len(CFs), len(CFs))))
         C_diag = np.matrix(CFs)
         np.fill_diagonal(C, C_diag)
 
-        Csparse = sparse.coo_array(C) # Sparse C  matrix of characterisation factors
+        Csparse = sparse.coo_array(C)
         c_data =  Csparse.data 
-        c_indices_remap = [[i[1] + len(activities),i[1]+ len(activities)] for i in np.transpose(Csparse.nonzero())] # same indices as in B
+        c_indices_remap = [[i[1] + len(activities),i[1]+ len(activities)] for i in np.transpose(Csparse.nonzero())]
         c_indices = np.array([tuple(coord) for coord in c_indices_remap], dtype=bwp.INDICES_DTYPE) 
-
         return A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip
     
-
-    # Perform baseline simulation
     def perform_baseline(self, index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, directory, k, t, myact):
-        # Creating a datapackage
+        """
+        Perform baseline simulation.
+        """
         dp_static = bwp.create_datapackage()
         dp_static.add_persistent_vector(
             matrix='technosphere_matrix',
@@ -135,43 +140,38 @@ class SimulationScript:
         )
 
         lca = bc.LCA(
-            demand={index: 1}, # using index because the argument of FU is an INTEGER
+            demand={index: 1},
             data_objs=[dp_static],
         )
         lca.lci()
         lca.lcia()
 
-        # check with normal matrix operation
-        f = np.zeros(len(A))
-        f[index] = 1 # functional unit
+        os.makedirs(directory, exist_ok=True)
+        filename = os.path.join(directory, f"CASE_{k}_{t}_MC_simulations_{myact}.csv")
 
-        os.makedirs(directory, exist_ok=True)  # Create the directory if it does not exist
-        filename = os.path.join(directory, f"CASE_{k}_{t}_MC_simulations_{myact}.csv") # Define filename for saving results
-
-        print('ioscore',np.sum(C.dot(B.dot((np.linalg.inv(A_)).dot(f))))) # matrix operation
-        print('LCA score: ', lca.score)  # similar values, when rounded. All is good
+        print('ioscore',np.sum(C.dot(B.dot((np.linalg.inv(A_)).dot(f)))))
+        print('LCA score: ', lca.score)  ## TODO: better to save the score in the result file too, so that we don't miss it.
         
         with open(filename, "w") as file:
             file.write("kg CO2eq\n") # Write the header
             file.write(f"{lca.score}")
             print(f"Baseline result saved to {filename}.")
 
-
-    # Ready the matries for simulation
     def add_uncertainty(self, t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip):
+        """
+        Add uncertainty to matrices.
+        """
         if t == "uniform":
             results_a = []
             results_b = []
-
-            #set the uncertainty for matrix A
+            
             min_val_a = a_data - (a_data * u)
             max_val_a = a_data + (a_data * u)
 
-            # Iterate over indices and check corresponding values in a_flip
             for i in range(len(a_data)):
-                if not a_flip[i]:  # If a_flip at index i is False
+                if not a_flip[i]:
                     parameters_a = (0, a_data[i], np.NaN, np.NaN, np.NaN, np.NaN, False)
-                else:  # If a_flip at index i is True
+                else:
                     parameters_a = (4, np.NaN, np.NaN, np.NaN, min_val_a[i], max_val_a[i], False)
                 results_a.append(parameters_a)
             
@@ -195,15 +195,13 @@ class SimulationScript:
             results_a = []
             results_b = []
 
-            #add uncertainty for A
             mu_a = np.log(a_data)
             sigma = np.log(u)
-
-            # Iterate over indices and check corresponding values in a_flip
+            
             for i in range(len(a_data)):
-                if not a_flip[i]:  # If a_flip at index i is False
+                if not a_flip[i]:
                     parameters_a = (0, a_data[i], np.NaN, np.NaN, np.NaN, np.NaN, False)
-                else:  # If a_flip at index i is True
+                else:
                     parameters_a = (2, mu_a[i], sigma, np.NaN, np.NaN, np.NaN, False)
                 results_a.append(parameters_a)
 
@@ -212,10 +210,7 @@ class SimulationScript:
                     ('shape', 'f4'), ('minimum', 'f4'), ('maximum', 'f4'), ('negative', 'b')]
             )
 
-            #add uncertainty for B
             mu_b = np.log(b_data)
-
-            # Iterate over indices and check corresponding values in a_flip
             for i in range(len(b_data)):
                 parameters_b = (2, mu_b[i], sigma, np.NaN, np.NaN, np.NaN, False)
                 results_b.append(parameters_b)
@@ -226,7 +221,6 @@ class SimulationScript:
             )
 
         dp_stochastic = bwp.create_datapackage()
-
         dp_stochastic.add_persistent_vector(
             matrix='technosphere_matrix',
             indices_array=a_indices,
@@ -245,12 +239,12 @@ class SimulationScript:
             indices_array=c_indices,
             data_array=c_data,
         )
-
         return dp_stochastic
     
-
-    # Perform Monte Carlo simulation
     def perform_simu(self, index, dp_stochastic, directory, k, myact, t, u):
+        """
+        Perform Monte Carlo simulation and save the lca score.
+        """
         lca = bc.LCA(
             demand={index: 1},
             data_objs=[dp_stochastic],
@@ -261,36 +255,30 @@ class SimulationScript:
 
         print('LCA score: ', lca.score)
 
-        os.makedirs(directory, exist_ok=True)  # Create the directory if it does not exist
-        filename = os.path.join(directory, f"CASE_{k}_{t}_{u}_MC_simulations_{myact}.csv") # Define filename for saving results
+        os.makedirs(directory, exist_ok=True)
+        filename = os.path.join(directory, f"CASE_{k}_{t}_{u}_MC_simulations_{myact}.csv")
         
-        # Define simulation parameters
+        # TODO: these can be passed as parameters.
         batch_size = 50
         num_batches = 10
 
         with open(filename, "w") as file:
-            file.write("kg CO2eq\n") # Write the header
+            file.write("kg CO2eq\n")
             for p in range(num_batches):
-                # Run simulations for the current batch
                 batch_results = [lca.score for _ in zip(range(batch_size), lca)]
-                
-                # Convert to DataFrame
                 df_batch = pd.DataFrame(batch_results, columns=["kg CO2eq"])
-                
-                # Save batch results to CSV, appending to the file
                 df_batch.to_csv(file, header=False, index=False)
-            
-                # Print progress
                 print(f"Batch {p} saved to {filename}.")
 
         print(f"Results saved to {filename}.")
 
-    
     def sort_file(self, file_list):
+        """
+        Sort files in a folder when file name has both string and number.
+        """
         for file in file_list:
             match = re.search(r'\d+', file)
             return int(match.group()) if match else float('inf')
-
 
     def concate_files(self, folder_path):
         """
@@ -307,7 +295,6 @@ class SimulationScript:
                 data = pd.concat([data, df], axis=1)
             data.to_csv(f"{folder_path}/all_results.csv", index=False)
 
-
     def collect_data(self, folder_path, database_type):
         """
         Merge all columns from all files in a folder(axis=1), ready for plot drawing.
@@ -316,7 +303,6 @@ class SimulationScript:
         data = pd.DataFrame()
         sorted_folders = sorted(os.listdir(folder_path), key=self.sort_file)
         for folder in sorted_folders:
-            # only choose one dataset at a time
             if database_type in folder:
                 path = os.path.join(folder_path, folder)
                 sorted_files = sorted(os.listdir(path), key=self.sort_file)
@@ -327,14 +313,12 @@ class SimulationScript:
                         df = pd.read_csv(file_path)
                         df["case"] = "_".join(file.split("_")[2:4])
                         df["sector"] = file.split("_")[-1].split(".")[0]
-                        data = pd.concat([data, df], ignore_index=True) # concatenate data for all the cases
+                        data = pd.concat([data, df], ignore_index=True)
 
         print(f"Check cases: {data['case'].unique()}")
         print(f"Check row numbers: {len(data)}")
         print(f"Check column numbers: {len(data.columns)}")
-
         return data
-
 
     def collect_data_direct(self, folder_path):
         """
@@ -346,20 +330,16 @@ class SimulationScript:
         for file in sorted_folders:
             if file.endswith(".csv"):
                 file_path = os.path.join(folder_path, file)
-                # print(f"Reading file: {file}")
                 df = pd.read_csv(file_path)
-                df["case"] = "_".join(file.split("_")[2:4]) # get the uncertainty type and number
+                df["case"] = "_".join(file.split("_")[2:4]) # TODO: maybe better to get it by regular expression. get the uncertainty type and number
                 match = re.search(r'simulations_(.*)\.csv', file)
                 df["sector"] = match.group(1) if match else print("Sector name not founded.")
-                # print(df["sector"].unique())
-                data = pd.concat([data, df], ignore_index=True) # concatenate data for all the cases
+                data = pd.concat([data, df], ignore_index=True)
 
         print(f"Check cases: {data['case'].unique()}")
         print(f"Check row numbers: {len(data)}")
         print(f"Check column numbers: {len(data.columns)}")
-
         return data
-
 
     def draw_plot(self, data, compare_type, database_type, save_path):
         if not os.path.exists(save_path):
@@ -383,7 +363,7 @@ class SimulationScript:
                 plt_name = f"MC_{plt_title}_{compare_type}.png"
                 plt.gca().yaxis.set_major_formatter(formatter)
                 plt.savefig(os.path.join(save_path, plt_name))
-                plt.close() # to free memory
+                plt.close() # always remember to free memory
         elif compare_type == "sectors": # means one plot includes all sectors
             for case in data["case"].unique():
                 filtered_data = data[data["case"] == case].copy()
@@ -391,7 +371,7 @@ class SimulationScript:
                 plt.xlabel("Scenarios")
                 plt.ylabel("kg CO2eq")
                 if database_type == "big":
-                    x_order = ["DE-Paraffin_Waxes", "RU-Food_waste_for_treatment__incineration", "NO-Other_services_(93)", "AT-Office_machinery_and_computers_(30)"]
+                    x_order = ["DE-Paraffin_Waxes", "RU-Food_waste_for_treatment__incineration", "NO-Other_services_(93)", "AT-Office_machinery_and_computers_(30)"] # TODO: better not include constant in a utility function, make it configurable.
                 else:
                     x_order = ["EU28-Energy", "RoW-Waste_management", "EU28-Services", "EU28-Industry"]
                 sb.boxplot(x=filtered_data["sector"], y=filtered_data["kg CO2eq"], data=filtered_data, order=x_order, hue="sector", palette="Set2")
@@ -404,4 +384,4 @@ class SimulationScript:
                 plt_name = f"MC_{plt_title}_{compare_type}.png"
                 plt.gca().yaxis.set_major_formatter(formatter)
                 plt.savefig(os.path.join(save_path, plt_name))
-                plt.close() # to free memory
+                plt.close() # always remember to free memory
