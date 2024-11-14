@@ -341,7 +341,7 @@ class SimulationScript:
         print(f"Check column numbers: {len(data.columns)}")
         return data
 
-    def draw_plot(self, data, compare_type, database_name, save_path):
+    def draw_plot(self, data, compare_type, database_name, sector_names, save_path):
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
@@ -352,12 +352,10 @@ class SimulationScript:
         if compare_type == "cases": # means one plot includes all uncertainty cases for one sector
             for sector in data["sector"].unique():
                 filtered_data = data[data["sector"] == sector].copy()
-                
                 plt.figure(figsize=(12, 10))
                 plt.xlabel("Scenarios")
                 plt.ylabel("kg CO2eq")
-                x_order = ["baseline_MC", "log-normal_1.106", "log-normal_1.225", "log-normal_1.363", "uniform_0.1", "uniform_0.2", "uniform_0.3"]
-                sb.boxplot(x=filtered_data["case"], y=filtered_data["kg CO2eq"], data=filtered_data, order=x_order, hue="case", palette="Set2")
+                sb.boxplot(x=filtered_data["case"], y=filtered_data["kg CO2eq"], data=filtered_data, order=sector_names, hue="case", palette="Set2")
                 plt_title = "_".join([sector, database_name])
                 plt.title(plt_title)
                 plt_name = f"MC_{plt_title}_{compare_type}.png"
@@ -370,16 +368,12 @@ class SimulationScript:
                 plt.figure(figsize=(12, 10))
                 plt.xlabel("Scenarios")
                 plt.ylabel("kg CO2eq")
-                if "agg" not in database_name:
-                    x_order = ["DE-Paraffin_Waxes", "RU-Food_waste_for_treatment__incineration", "NO-Other_services_(93)", "AT-Office_machinery_and_computers_(30)"] # TODO: better not include constant in a utility function, make it configurable.
-                else:
-                    x_order = ["EU28-Energy", "RoW-Waste_management", "EU28-Services", "EU28-Industry"]
-                sb.boxplot(x=filtered_data["sector"], y=filtered_data["kg CO2eq"], data=filtered_data, order=x_order, hue="sector", palette="Set2")
+                sb.boxplot(x=filtered_data["sector"], y=filtered_data["kg CO2eq"], data=filtered_data, order=sector_names, hue="sector", palette="Set2")
                 plt_title = "_".join([case, database_name])
                 plt.title(plt_title)
                 plt.xticks(
-                    ticks=range(len(x_order)), 
-                    labels=["\n".join(textwrap.wrap(label, width=21)) for label in x_order],
+                    ticks=range(len(sector_names)), 
+                    labels=["\n".join(textwrap.wrap(label, width=21)) for label in sector_names],
                 )
                 plt_name = f"MC_{plt_title}_{compare_type}.png"
                 plt.gca().yaxis.set_major_formatter(formatter)

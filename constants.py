@@ -32,8 +32,21 @@ U_LOG = [1.106, 1.225, 1.363] # Define the uncertainty for log-normal distributi
 AMOUNT = 4 # This is the amount of activities for 1 CASE
 
 
-# ---------- PARAMETERS FOR PLOT DRAWING ---------- 
+# ---------- CONSTANTS FOR PLOT DRAWING ----------
 FOLDER_PATH = os.path.join(os.getcwd(), "Exiobase_folders_for_Ning")
 DB_SIZE = ["small", "big"]
 PLT_COMP_TYPE = ["cases", "sectors"]
 PLT_SAVE_PATH = os.path.join(FOLDER_PATH, "plt_output")
+
+
+# ---------- CONSTANTS FOR PLOT DRAWING V2.0 (Always big then small, to prevent human mistake.)----------
+LABEL_FONT = 16
+TICK_FONT = 14
+
+DATABASE_NAME = ["EXIOBASE", "EXIOBASE_aggregate"]
+UNCERTAINTY_NAME = ["baseline_MC", "log-normal_1.106", "log-normal_1.225", "log-normal_1.363", "uniform_0.1", "uniform_0.2", "uniform_0.3"]
+SECTOR_NAME_BIG = ["DE-Paraffin_Waxes", "RU-Food_waste_for_treatment__incineration", "NO-Other_services_(93)", "AT-Office_machinery_and_computers_(30)"]
+SECTOR_NAME_SMALL = ["EU28-Energy", "RoW-Waste_management", "EU28-Services", "EU28-Industry"]
+COMPARE_TYPE = ["sectors", "cases"]
+DATABASE_SECTORS = [(COMPARE_TYPE[0], DATABASE_NAME[0], SECTOR_NAME_BIG), (COMPARE_TYPE[0], DATABASE_NAME[1], SECTOR_NAME_SMALL)]
+DATABASE_UNCERTAINTIES = [(COMPARE_TYPE[1], DATABASE_NAME[0], UNCERTAINTY_NAME), (COMPARE_TYPE[1], DATABASE_NAME[1], UNCERTAINTY_NAME)]
