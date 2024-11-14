@@ -353,7 +353,7 @@ class SimulationScript:
             for sector in data["sector"].unique():
                 filtered_data = data[data["sector"] == sector].copy()
                 plt.figure(figsize=(12, 10))
-                plt.xlabel("Scenarios")
+                plt.xlabel("Cases")
                 plt.ylabel("kg CO\u2082eq")
                 sb.boxplot(x=filtered_data["case"], y=filtered_data["kg CO2eq"], data=filtered_data, order=sector_names, hue="case", palette="Set2")
                 plt_title = "_".join([sector, database_name])
@@ -366,7 +366,7 @@ class SimulationScript:
             for case in data["case"].unique():
                 filtered_data = data[data["case"] == case].copy()
                 plt.figure(figsize=(12, 10))
-                plt.xlabel("Scenarios")
+                plt.xlabel("Activities")
                 plt.ylabel("kg CO\u2082eq")
                 sb.boxplot(x=filtered_data["sector"], y=filtered_data["kg CO2eq"], data=filtered_data, order=sector_names, hue="sector", palette="Set2")
                 plt_title = "_".join([case, database_name])
