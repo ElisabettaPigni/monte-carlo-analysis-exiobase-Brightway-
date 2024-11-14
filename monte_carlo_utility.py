@@ -342,6 +342,8 @@ class SimulationScript:
         return data
 
     def draw_plot(self, data, compare_type, database_name, sector_names, save_path):
+        font = {'size': 16}
+        plt.rc('font', **font)
         if not os.path.exists(save_path):
             os.makedirs(save_path)
 
@@ -352,9 +354,9 @@ class SimulationScript:
         if compare_type == "cases": # means one plot includes all uncertainty cases for one sector
             for sector in data["sector"].unique():
                 filtered_data = data[data["sector"] == sector].copy()
-                plt.figure(figsize=(12, 10))
-                plt.xlabel("Cases")
-                plt.ylabel("kg CO\u2082eq")
+                plt.figure(figsize=(16, 10))
+                plt.xlabel("Cases", labelpad=20)
+                plt.ylabel("kg CO\u2082eq", labelpad=20)
                 sb.boxplot(x=filtered_data["case"], y=filtered_data["kg CO2eq"], data=filtered_data, order=sector_names, hue="case", palette="Set2")
                 plt_title = "_".join([sector, database_name])
                 plt.title(plt_title)
@@ -365,9 +367,9 @@ class SimulationScript:
         elif compare_type == "sectors": # means one plot includes all sectors
             for case in data["case"].unique():
                 filtered_data = data[data["case"] == case].copy()
-                plt.figure(figsize=(12, 10))
-                plt.xlabel("Activities")
-                plt.ylabel("kg CO\u2082eq")
+                plt.figure(figsize=(16, 10))
+                plt.xlabel("Activities", labelpad=20)
+                plt.ylabel("kg CO\u2082eq", labelpad=20)
                 sb.boxplot(x=filtered_data["sector"], y=filtered_data["kg CO2eq"], data=filtered_data, order=sector_names, hue="sector", palette="Set2")
                 plt_title = "_".join([case, database_name])
                 plt.title(plt_title)
