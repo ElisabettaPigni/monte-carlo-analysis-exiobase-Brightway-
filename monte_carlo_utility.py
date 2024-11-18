@@ -23,19 +23,13 @@ import re
 
 
 class SimulationScript:
-    def check(self, ):
-        """
-        Before run the simulation, check everything is ready.
-        """
-        pass
-
     def get_activities(self, A_file_path: str) -> list:
         """
         Form activities by combing <country_name> and <sector_name>.
         """
-        A_raw = pd.read_csv(A_file_path, sep='\t', low_memory=False)
-        countries = A_raw['region'].drop_duplicates().iloc[2:].tolist()
-        sectors = list(A_raw.iloc[2:,1].drop_duplicates())
+        df = pd.read_csv(A_file_path, sep='\t', low_memory=False)
+        countries = df['region'].drop_duplicates().iloc[2:].tolist()
+        sectors = list(df.iloc[2:,1].drop_duplicates())
         activities = [ x + '-' + y for x in countries for y in sectors]
         return activities
 
@@ -331,9 +325,10 @@ class SimulationScript:
             if file.endswith(".csv"):
                 file_path = os.path.join(folder_path, file)
                 df = pd.read_csv(file_path)
-                df["case"] = "_".join(file.split("_")[2:4]) # TODO: maybe better to get it by regular expression. get the uncertainty type and number
+                case_name = " ".join(file.split("_")[2:4])
+                df["case"] = case_name if "baseline" not in case_name else "deterministic"
                 match = re.search(r'simulations_(.*)\.csv', file)
-                df["sector"] = match.group(1) if match else print("Sector name not founded.")
+                df["sector"] = match.group(1).replace("_", " ") if match else print("Sector name not founded.")
                 data = pd.concat([data, df], ignore_index=True)
 
         print(f"Check cases: {data['case'].unique()}")
@@ -354,12 +349,12 @@ class SimulationScript:
         if compare_type == "cases": # means one plot includes all uncertainty cases for one sector
             for sector in data["sector"].unique():
                 filtered_data = data[data["sector"] == sector].copy()
-                plt.figure(figsize=(16, 10))
+                plt.figure(figsize=(16, 14))
                 plt.xlabel("Cases", labelpad=20)
                 plt.ylabel("kg CO\u2082eq", labelpad=20)
                 sb.boxplot(x=filtered_data["case"], y=filtered_data["kg CO2eq"], data=filtered_data, order=sector_names, hue="case", palette="Set2")
-                plt_title = "_".join([sector, database_name])
-                plt.title(plt_title)
+                plt_title = " ".join([sector, database_name])
+                plt.title(plt_title, labelpad=20)
                 plt_name = f"MC_{plt_title}_{compare_type}.png"
                 plt.gca().yaxis.set_major_formatter(formatter)
                 plt.savefig(os.path.join(save_path, plt_name))
@@ -367,11 +362,11 @@ class SimulationScript:
         elif compare_type == "sectors": # means one plot includes all sectors
             for case in data["case"].unique():
                 filtered_data = data[data["case"] == case].copy()
-                plt.figure(figsize=(16, 10))
+                plt.figure(figsize=(16, 14))
                 plt.xlabel("Activities", labelpad=20)
                 plt.ylabel("kg CO\u2082eq", labelpad=20)
                 sb.boxplot(x=filtered_data["sector"], y=filtered_data["kg CO2eq"], data=filtered_data, order=sector_names, hue="sector", palette="Set2")
-                plt_title = "_".join([case, database_name])
+                plt_title = " ".join([case, database_name])
                 plt.title(plt_title)
                 plt.xticks(
                     ticks=range(len(sector_names)), 
