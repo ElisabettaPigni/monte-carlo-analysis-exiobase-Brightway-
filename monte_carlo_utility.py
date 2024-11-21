@@ -90,7 +90,6 @@ class SimulationScript:
                     "CH4 - non combustion - Oil refinery - air",
                     "N2O - combustion - air",
                     "N2O - agriculture - air",
-                    "HFC - air",
                     "SF6 - air"]
         S = S_raw.loc[GHG_rows]
 
@@ -100,7 +99,7 @@ class SimulationScript:
         b_indices_remap = [[i[0] + len(activities),i[1]] for i in np.transpose(Bsparse.nonzero())]
         b_indices = np.array([tuple(coord) for coord in b_indices_remap], dtype=bwp.INDICES_DTYPE)
 
-        CFs = [1., 29.8, 273., 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 1., 1., 25200., 14600., 29.8, 1., 273., 29.8, 1., 1.]
+        CFs = [1., 1., 1., 1., 1., 1., 27.0, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 273., 273., 25200.]
         C = np.matrix(np.zeros((len(CFs), len(CFs))))
         C_diag = np.matrix(CFs)
         np.fill_diagonal(C, C_diag)
