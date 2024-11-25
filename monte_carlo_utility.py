@@ -13,13 +13,12 @@ import pandas as pd
 import numpy as np
 from random import sample
 import os
-from constants import *
 import matplotlib.pyplot as plt
 import seaborn as sb
 from matplotlib.ticker import FuncFormatter
-from constants import *
 import textwrap
 import re
+import bw2data as bd
 
 
 class SimulationScript:
@@ -48,6 +47,45 @@ class SimulationScript:
         """
         index = activities.index(activity_name)
         return index
+    
+    # TODO: 
+    def get_ecoinvent_code(self, ecoinvent_name):
+        pass
+
+    # ATTENTION: the input file must have the same order as c matrix
+    # TODO: some situations
+    # 1. what if the file has difference delimiter (a function needed to handle all the file reading)
+    # 2. What if the user gives the wrong code
+    # 3. separate into 2 functions if have time.
+    def form_cf_matrix(self, emission_file: str, method: tuple) -> pd.DataFrame:
+        emission_code = pd.read_csv(emission_file, delimiter=",") 
+        codes = emission_code.iloc[:, -1]
+
+        bw_method = bd.Method(method)
+        method_df = pd.DataFrame(bw_method.load(), columns=["database_code", "cf_number"])
+        method_df[["database", "code"]] = method_df["database_code"].to_list()
+        cf_selected = method_df[method_df["code"].isin(codes)][["code", "cf_number"]]
+        cf_dict = cf_selected.set_index("code")["cf_number"].to_dict()
+        missing_codes = list(set(codes.unique()) - set(cf_selected["code"]))
+        
+        cf_matrix = []
+        if not missing_codes:
+            for code in codes:
+                cf_matrix.append(cf_dict.get(code))
+        else:
+            miss_dict = emission_code[["ecoinvent name", "brightway code"]].set_index("brightway code")["ecoinvent name"].to_dict()
+            fixed_codes = []
+            for code in missing_codes:
+                name = miss_dict.get(code)
+                if "Carbon dioxide" in name:
+                    cf_dict[code] = 1.0
+                    fixed_codes.append(code)
+            if missing_codes != fixed_codes:
+                print(f"CF data imcomplete, missing: {missing_codes}")
+            else:
+                for code in codes:
+                    cf_matrix.append(cf_dict.get(code))
+        return cf_matrix
     
     def build_bw_matrix_add(self, A_file_path, S_file_path):
         pass
