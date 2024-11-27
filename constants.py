@@ -50,3 +50,30 @@ SECTOR_NAME_SMALL = ["EU28-Energy", "RoW-Waste_management", "EU28-Services", "EU
 COMPARE_TYPE = ["sectors", "cases"]
 DATABASE_SECTORS = [(COMPARE_TYPE[0], DATABASE_NAME[0], SECTOR_NAME_BIG), (COMPARE_TYPE[0], DATABASE_NAME[1], SECTOR_NAME_SMALL)]
 DATABASE_UNCERTAINTIES = [(COMPARE_TYPE[1], DATABASE_NAME[0], UNCERTAINTY_NAME), (COMPARE_TYPE[1], DATABASE_NAME[1], UNCERTAINTY_NAME)]
+
+# ---------- CONSTANTS FOR CASE STUDY ----------
+METHOD = ('EF v3.1', 'climate change', 'global warming potential (GWP100)')
+METHOD_IPCC = ('IPCC 2013', 'climate change', 'global warming potential (GWP100)')
+
+GHG = ["CO2 - combustion - air",
+        "CO2 - non combustion - Cement production - air",
+        "CO2 - non combustion - Lime production - air",
+        "CO2 - waste - biogenic - air", 
+        "CO2 - waste - fossil - air",
+        "CO2 - agriculture - peat decay - air", 
+        "CH4 - agriculture - air",
+        "CH4 - waste - air",
+        "CH4 - combustion - air",
+        "CH4 - non combustion - Extraction/production of (natural) gas - air",
+        "CH4 - non combustion - Extraction/production of crude oil - air",
+        "CH4 - non combustion - Mining of antracite - air",
+        "CH4 - non combustion - Mining of bituminous coal - air",
+        "CH4 - non combustion - Mining of coking coal - air",
+        "CH4 - non combustion - Mining of lignite (brown coal) - air",
+        "CH4 - non combustion - Mining of sub-bituminous coal - air",
+        "CH4 - non combustion - Oil refinery - air",
+        "N2O - combustion - air",
+        "N2O - agriculture - air",
+        "SF6 - air"]
+
+CFS = [1., 1., 1., 1., 1., 1., 27.0, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 273., 273., 25200.]
