@@ -21,7 +21,7 @@ def data_prepare():
     # characterization factor matrix
     # ATTENTION: have to make sure the file has the same order as biosphere emissions.
     # cf_matrix = simu.form_cf_matrix("EXIOBASE-ecoinvent-bio-bw-GHG.csv", METHOD)
-    cf_matrix = np.diagflat(OLD_CFS)
+    cf_matrix = np.diagflat(CFS)
 
     simu.save_metadata(activities, "technosphere")
     simu.save_metadata(activities, "biosphere")
@@ -71,14 +71,26 @@ def create_datapackages(tech_matrix, bio_matrix, cf_matrix):
                        
     return datapackage
 
-def run_experiments(datapackage):
-    for act in SMALL_CHOSEN_ACT:
+def run_experiments(chosen_act, datapackage):
+    for act in chosen_act:
         lca_score = simu.perform_simulation(act[1], datapackage)
-        print(lca_score)
+        print(f"Brightway calculated lca score: {lca_score}")
 
+def check_additional_column_correct(A, B, C, chosen_act):
+    A_ = -A
+    np.fill_diagonal(A_, -A_.diagonal())
+    for act in chosen_act:
+        lca_score_manual = simu.manual_lca(A, B, C, A_, act[1])
+        print(f"Manually calculated lca score: {lca_score_manual}")
 
 if __name__ == "__main__":
-    # baseline, exiobase small
-    tech_matrix, bio_matrix, cf_matrix = data_prepare()
+    # # baseline, exiobase small
+    # tech_matrix, bio_matrix, cf_matrix = data_prepare()
+    # datapackage = create_datapackages(tech_matrix, bio_matrix, cf_matrix)
+    # run_experiments(SMALL_CHOSEN_ACT, datapackage)
+
+    # additional column, exiobase small
+    tech_matrix, bio_matrix, cf_matrix = data_prepare_addional_data()
     datapackage = create_datapackages(tech_matrix, bio_matrix, cf_matrix)
-    run_experiments(datapackage)
+    run_experiments(SMALL_CHOSEN_ACT, datapackage)
+    check_additional_column_correct(tech_matrix, bio_matrix, cf_matrix, SMALL_CHOSEN_ACT)
