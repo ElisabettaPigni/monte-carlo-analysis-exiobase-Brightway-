@@ -21,10 +21,10 @@ def data_prepare():
     # characterization factor matrix
     # ATTENTION: have to make sure the file has the same order as biosphere emissions.
     # cf_matrix = simu.form_cf_matrix("EXIOBASE-ecoinvent-bio-bw-GHG.csv", METHOD)
-    cf_matrix = np.diagflat(CFS)
+    cf_matrix = np.diagflat(OLD_CFS)
 
-    simu.save_metadata(["extra"] + activities, "technosphere")
-    simu.save_metadata(GHG, "biosphere")
+    simu.save_metadata(activities, "technosphere")
+    simu.save_metadata(activities, "biosphere")
 
     return tech_matrix, bio_matrix, cf_matrix
 
@@ -59,8 +59,9 @@ def data_prepare_addional_data():
     # cf_matrix = simu.form_cf_matrix("EXIOBASE-ecoinvent-bio-bw-GHG.csv", METHOD)
     cf_matrix = np.diagflat(CFS)
 
-    simu.save_metadata(activities, "technosphere")
-    simu.save_metadata(GHG, "biosphere")
+    # add the additional column name to record the index
+    simu.save_metadata(["extra"] + activities, "technosphere")
+    simu.save_metadata(["extra"] + activities, "biosphere")
 
     return tech_matrix_new, bio_matrix_new, cf_matrix
 
@@ -72,11 +73,12 @@ def create_datapackages(tech_matrix, bio_matrix, cf_matrix):
 
 def run_experiments(datapackage):
     for act in SMALL_CHOSEN_ACT:
-        simu.perform_simulation(act[1], datapackage)
+        lca_score = simu.perform_simulation(act[1], datapackage)
+        print(lca_score)
 
 
 if __name__ == "__main__":
-    # original baseline
+    # baseline, exiobase small
     tech_matrix, bio_matrix, cf_matrix = data_prepare()
     datapackage = create_datapackages(tech_matrix, bio_matrix, cf_matrix)
     run_experiments(datapackage)

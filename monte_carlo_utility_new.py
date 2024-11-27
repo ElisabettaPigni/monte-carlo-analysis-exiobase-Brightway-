@@ -17,8 +17,8 @@ from typing import List, Tuple, Any
 class SimulationScript:
     def __init__(self):
         self.metadata = {
-            "technosphere": {},
-            "biosphere": {},
+            "technosphere": {}, # technosphere_column_index
+            "biosphere": {}, # biosphere_column_index
         }
 
     def save_metadata(self, names, matrix_type):
@@ -129,13 +129,13 @@ class SimulationScript:
         cf_sparse = sparse.coo_array(cf_matrix)
         cf_coors = np.column_stack(cf_sparse.nonzero())
         cf_data =  cf_sparse.data
-        cf_indices = np.array([tuple([coord[0] + max_coor[0], coord[1] + max_coor[0]]) for coord in cf_coors], dtype=bwp.INDICES_DTYPE)
+        cf_indices = np.array([tuple([coord[0] + max_coor[0], coord[1] + max_coor[1]]) for coord in cf_coors], dtype=bwp.INDICES_DTYPE)
         
-        tech_poss = list(set(coord[0] for coord in tech_indices))
+        tech_poss = list(set(coord[1] for coord in tech_indices))
         for act, tech_pos in zip(self.metadata["technosphere"], tech_poss):
             self.metadata["technosphere"][act] = tech_pos
 
-        bio_poss = list(set(coord[0] for coord in bio_indices))
+        bio_poss = list(set(coord[1] for coord in bio_indices))
         for emission, bio_pos in zip(self.metadata["biosphere"], bio_poss):
             self.metadata["biosphere"][emission] = bio_pos
 
@@ -182,3 +182,12 @@ class SimulationScript:
         )
         lca.lci()
         lca.lcia()
+
+        return lca.score
+
+    def manual_lca(self, A, B, C, A_, index):
+        f = np.zeros(len(A))
+        f[index] = 1
+        lca_score = np.sum(C.dot(B.dot((np.linalg.inv(A_)).dot(f))))
+
+        return lca_score
