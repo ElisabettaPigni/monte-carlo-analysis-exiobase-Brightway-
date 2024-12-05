@@ -47,18 +47,14 @@ class SimulationScript:
         """
         index = activities.index(activity_name)
         return index
-    
-    # TODO: 
-    def get_ecoinvent_code(self, ecoinvent_name):
-        pass
 
-    # ATTENTION: the input file must have the same order as c matrix
+    # ATTENTION: have to make sure the file has the same order as biosphere emissions.
     # TODO: some situations
-    # 1. what if the file has difference delimiter (a function needed to handle all the file reading)
-    # 2. What if the user gives the wrong code
-    # 3. separate into 2 functions if have time.
-    def form_cf_matrix(self, emission_file: str, method: tuple) -> pd.DataFrame:
-        emission_code = pd.read_csv(emission_file, delimiter=",") 
+    # 1. What if the user gives the wrong code
+    # 2. separate into 2 functions if have time.
+    
+    def form_cf_matrix(self, emission_file: str, delimiter: str, method: tuple) -> pd.DataFrame:
+        emission_code = pd.read_csv(emission_file, delimiter=delimiter) 
         codes = emission_code.iloc[:, -1]
 
         bw_method = bd.Method(method)
@@ -85,10 +81,10 @@ class SimulationScript:
             else:
                 for code in codes:
                     cf_matrix.append(cf_dict.get(code))
+
+        cf_matrix = np.diagflat(cf_matrix)
+            
         return cf_matrix
-    
-    def build_bw_matrix_add(self, A_file_path, S_file_path):
-        pass
 
     def build_bw_matrix(self, A_file_path, S_file_path):
         """
