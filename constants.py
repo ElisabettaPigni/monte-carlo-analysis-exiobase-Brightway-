@@ -1,35 +1,63 @@
 import os
 
 # ---------- PARAMETERS FOR SIMULATION ---------- 
-# BIG DATASET FILE PATH
-BIG_DIR_INPUT = os.path.join(os.getcwd(), "IOT_2022_pxp")
-BIG_DIR_OUTPUT = os.path.join(os.getcwd(), "big_output")
-BIG_A_FILE = os.path.join(os.getcwd(), "IOT_2022_pxp", "A.txt")
-BIG_S_FILE = os.path.join(os.getcwd(), "IOT_2022_pxp", "satellite", "S.txt")
+# EXIOBASE FILE PATH
+EXIOBASE_INPUT = os.path.join(os.getcwd(), "IOT_2022_pxp")
+EXIOBASE_OUTPUT = os.path.join(os.getcwd(), "big_output")
+EXIOBASE_A_FILE = os.path.join(os.getcwd(), "IOT_2022_pxp", "A.txt")
+EXIOBASE_S_FILE = os.path.join(os.getcwd(), "IOT_2022_pxp", "satellite", "S.txt")
 
-# SMALL DATASET FILE PATH
-SMALL_DIR_INPUT = os.path.join(os.getcwd(), "exiobase_2022_small")
-SMALL_DIR_OUTPUT = os.path.join(os.getcwd(), "small_output")
-SMALL_A_FILE = os.path.join(os.getcwd(), "exiobase_2022_small", "A.txt")
-SMALL_S_FILE = os.path.join(os.getcwd(), "exiobase_2022_small", "satellite", "S.txt")
+# EXIOBASE AGGREGATED FILE PATH
+EXIOBASE_AGGREGATED_INPUT = os.path.join(os.getcwd(), "exiobase_2022_small")
+EXIOBASE_AGGREGATED_OUTPUT = os.path.join(os.getcwd(), "small_output")
+EXIOBASE_AGGREGATED_A_FILE = os.path.join(os.getcwd(), "exiobase_2022_small", "A.txt")
+EXIOBASE_AGGREGATED_S_FILE = os.path.join(os.getcwd(), "exiobase_2022_small", "satellite", "S.txt")
 
+# SELECTED ACTIVITIES
+SELECTED_EXIOBASE = [("CN-Railway transportation services", 6156), ("DE-Biodiesels", 1093), ("CH-Beverages", 7651), ("SE-Basic iron and steel and of ferro-alloys and first products thereof", 4903), ("DE-Paraffin Waxes", 1081), ("RU-Food waste for treatment: incineration", 7375), ("NO-Other services (93)", 8397), ("AT-Office machinery and computers (30)", 118)]
+SELECTED_AGGREGATED = [("RoW-Services", 68), ("EU28-Biodiesels", 11), ("EU28-Agriculture-Forestry-Fishing", 0), ("EU28-Basic iron and steel and of ferro-alloys and first products thereof", 13), ("EU28-Energy", 1), ("RoW-Waste management", 71), ("EU28-Services", 30), ("EU28-Industry", 3)]
 
-# CHOSEN ACTIVITIES
-# -- This is the activities chosen for the first batch of experiments. --
-# SMALL_CHOSEN_ACT = [("RoW-Services", 68), ("EU28-Biodiesels", 11), ("EU28-Agriculture-Forestry-Fishing", 0), ("EU28-Basic iron and steel and of ferro-alloys and first products thereof", 13)]
-# BIG_CHOSEN_ACT = [("CN-Railway transportation services", 6156), ("DE-Biodiesels", 1093), ("CH-Beverages", 7651), ("SE-Basic iron and steel and of ferro-alloys and first products thereof", 4903)]  # [6156, 1093, 7651, 4903]
-
-# -- This is the activities chosen for the second batch of experiments. --
-BIG_CHOSEN_ACT = [('DE-Paraffin Waxes', 1081), ('RU-Food waste for treatment: incineration', 7375), ('NO-Other services (93)', 8397), ('AT-Office machinery and computers (30)', 118)]
-SMALL_CHOSEN_ACT = [("EU28-Energy", 1), ("RoW-Waste management", 71), ("EU28-Services", 30), ("EU28-Industry", 3)]
-
-
-# UNCERTAINTY DEFINE
-# DIST_TYPE = ["baseline", "uniform", "log-normal"] # Define the types of distribution
-DIST_TYPE = ["uniform", "log-normal"]
+# UNCERTAINTY
+DIST_TYPE = ["static", "uniform", "log-normal"] # Define the types of distribution
 U_UNIFORM = [0.1, 0.2, 0.3] # Define the uncertainty for uniform distribution
 U_LOG = [1.106, 1.225, 1.363] # Define the uncertainty for log-normal distribution
-AMOUNT = 4 # This is the amount of activities for 1 CASE
+
+# COMBINED PARAMETERS
+COMBINED_PARAMETERS = [(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE, SELECTED_AGGREGATED, EXIOBASE_AGGREGATED_OUTPUT, "EXIOBASE AGGREGATED"), (EXIOBASE_A_FILE, EXIOBASE_S_FILE, SELECTED_EXIOBASE, EXIOBASE_OUTPUT, "EXIOBASE")]
+
+
+# ---------- CONSTANTS FOR CASE STUDY ----------
+METHOD = ('EF v3.1', 'climate change', 'global warming potential (GWP100)')
+METHOD_IPCC = ('IPCC 2013', 'climate change', 'global warming potential (GWP100)')
+GHG = ["CO2 - combustion - air",
+        "CO2 - non combustion - Cement production - air",
+        "CO2 - non combustion - Lime production - air",
+        "CO2 - waste - biogenic - air", 
+        "CO2 - waste - fossil - air",
+        "CO2 - agriculture - peat decay - air", 
+        "CH4 - agriculture - air",
+        "CH4 - waste - air",
+        "CH4 - combustion - air",
+        "CH4 - non combustion - Extraction/production of (natural) gas - air",
+        "CH4 - non combustion - Extraction/production of crude oil - air",
+        "CH4 - non combustion - Mining of antracite - air",
+        "CH4 - non combustion - Mining of bituminous coal - air",
+        "CH4 - non combustion - Mining of coking coal - air",
+        "CH4 - non combustion - Mining of lignite (brown coal) - air",
+        "CH4 - non combustion - Mining of sub-bituminous coal - air",
+        "CH4 - non combustion - Oil refinery - air",
+        "N2O - combustion - air",
+        "N2O - agriculture - air",
+        "SF6 - air"]
+
+CFS = [1., 1., 1., 1., 1., 1., 27.0, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 273., 273., 25200.]
+
+COUNTRY_FILE = "fake_gsd_data/Grouping_reg.csv"
+SECTOR_FILE = "fake_gsd_data/Grouping_sec.csv"
+GSD_FILE = "fake_gsd_data/GSD_sec_reg.csv"
+
+BIG_EXTEND = "/Users/bp45th/Downloads/20241120_foreground_system_big.csv"
+SMALL_EXTEND = "/Users/bp45th/Downloads/20241121_foreground_system_small.csv"
 
 
 # ---------- CONSTANTS FOR PLOT DRAWING ----------
@@ -44,7 +72,7 @@ LABEL_FONT = 16
 TICK_FONT = 14
 
 DATABASE_NAME = ["EXIOBASE", "EXIOBASE_aggregate"]
-UNCERTAINTY_NAME = ["baseline_MC", "log-normal_1.106", "log-normal_1.225", "log-normal_1.363", "uniform_0.1", "uniform_0.2", "uniform_0.3"]
+UNCERTAINTY_NAME = ["static_MC", "log-normal_1.106", "log-normal_1.225", "log-normal_1.363", "uniform_0.1", "uniform_0.2", "uniform_0.3"]
 SECTOR_NAME_BIG = ["DE-Paraffin_Waxes", "RU-Food_waste_for_treatment__incineration", "NO-Other_services_(93)", "AT-Office_machinery_and_computers_(30)"]
 SECTOR_NAME_SMALL = ["EU28-Energy", "RoW-Waste_management", "EU28-Services", "EU28-Industry"]
 COMPARE_TYPE = ["sectors", "cases"]
