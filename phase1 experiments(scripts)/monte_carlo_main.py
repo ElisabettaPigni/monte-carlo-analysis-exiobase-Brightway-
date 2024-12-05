@@ -76,12 +76,12 @@ def run_experiments(datapackage):
 
 
 if __name__ == "__main__":
-    # original baseline
+    # original static
     tech_matrix, bio_matrix, cf_matrix = data_prepare()
     datapackage = create_datapackages(tech_matrix, bio_matrix, cf_matrix)
     run_experiments(datapackage)
 
-    # # additional data baseline
+    # # additional data static
     # tech_matrix, bio_matrix, cf_matrix = data_prepare_addional_data()
     # datapackage = create_datapackages(tech_matrix, bio_matrix, cf_matrix)
     # run_experiments(datapackage)
@@ -106,12 +106,12 @@ if __name__ == "__main__":
     # # Run the simulation
     # k = 0
     # for t in DIST_TYPE:
-    #     # This is the baseline case
-    #     if t == "baseline":
+    #     # This is the static case
+    #     if t == "static":
     #         for myact, index in BIG_CHOSEN_ACT:
     #             k += 1
     #             print(f"----------- Starting CASE {k}, activity: {myact} -----------")
-    #             lca = simu.perform_baseline(index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, BIG_DIR_OUTPUT, t)
+    #             lca = simu.perform_static(index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, BIG_DIR_OUTPUT, t)
 
     #             print(f"CASE {k} simulation is done.")
 

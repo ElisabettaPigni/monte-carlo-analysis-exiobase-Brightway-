@@ -144,9 +144,9 @@ class SimulationScript:
         c_indices = np.array([tuple(coord) for coord in c_indices_remap], dtype=bwp.INDICES_DTYPE) 
         return A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip
     
-    def perform_baseline(self, index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, directory, k, t, myact):
+    def perform_static(self, index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, directory, k, t, myact):
         """
-        Perform baseline simulation.
+        Perform static simulation.
         """
         dp_static = bwp.create_datapackage()
         dp_static.add_persistent_vector(
@@ -176,13 +176,16 @@ class SimulationScript:
         os.makedirs(directory, exist_ok=True)
         filename = os.path.join(directory, f"CASE_{k}_{t}_MC_simulations_{myact}.csv")
 
+        f = np.zeros(len(A))
+        f[index] = 1
+
         print('ioscore',np.sum(C.dot(B.dot((np.linalg.inv(A_)).dot(f)))))
         print('LCA score: ', lca.score)  ## TODO: better to save the score in the result file too, so that we don't miss it.
         
         with open(filename, "w") as file:
             file.write("kg CO2eq\n") # Write the header
             file.write(f"{lca.score}")
-            print(f"Baseline result saved to {filename}.")
+            print(f"Static LCA result saved to {filename}.")
 
     def add_uncertainty(self, t, u, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip):
         """
@@ -280,7 +283,7 @@ class SimulationScript:
         lca.lci()
         lca.lcia()
 
-        print('LCA score: ', lca.score)
+        print('LCA score (with uncertainty): ', lca.score)
 
         os.makedirs(directory, exist_ok=True)
         filename = os.path.join(directory, f"CASE_{k}_{t}_{u}_MC_simulations_{myact}.csv")
@@ -359,7 +362,7 @@ class SimulationScript:
                 file_path = os.path.join(folder_path, file)
                 df = pd.read_csv(file_path)
                 case_name = " ".join(file.split("_")[2:4])
-                df["case"] = case_name if "baseline" not in case_name else "deterministic"
+                df["case"] = case_name if "static" not in case_name else "deterministic"
                 match = re.search(r'simulations_(.*)\.csv', file)
                 df["sector"] = match.group(1).replace("_", " ") if match else print("Sector name not founded.")
                 data = pd.concat([data, df], ignore_index=True)
