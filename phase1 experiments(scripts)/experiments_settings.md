@@ -14,14 +14,14 @@
 - METHOD: Environmental Footprint version 3.1
 - Brightway name: `('EF v3.1', 'climate change', 'global warming potential (GWP100)')`
 
-## Phase 1 experiments settings
+## Phase 1 experiment settings
 **Uncertainty**
 - Static
 - Uniform: 0.1, 0.2, 0.3
 - Log-normal: 1.106, 1.225, 1.363
 
 
-## Phase 2 experiments settings
+## Phase 2 experiment settings
 **Uncertainty**
 - Pedigree uncertainty
 
