@@ -302,13 +302,15 @@ class SimulationScript:
 
         print(f"Results saved to {filename}.")
 
-    def sort_file(self, file_list):
+    def sort_file(self, filename):        
         """
         Sort files in a folder when file name has both string and number.
         """
-        for file in file_list:
-            match = re.search(r'\d+', file)
-            return int(match.group()) if match else float('inf')
+        match = re.search(r'CASE_(\d+)_', filename)
+        if match:
+            return int(match.group(1))
+        else:
+            return float('inf')
 
     def concate_files(self, folder_path):
         """
