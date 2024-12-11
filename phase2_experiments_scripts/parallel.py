@@ -50,7 +50,7 @@ if __name__ == "__main__":
                     k += 1
                     parallel_params.append((t, myact, index, k, param[3], datapackage))
             elif t == "pedigree":
-                datapackage = create_stochastic_datapackage(param[0], param[1], param[5])
+                datapackage = create_stochastic_datapackage(param[0], param[1], param[5], param[4])
                 print("Datapackage are formatted.")
                 for myact, index in param[2]:
                     k += 1

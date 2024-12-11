@@ -18,6 +18,9 @@ class SimulationScript:
     def __init__(self):
         """
         self.metadata: save technosphere data, including column index and gsd
+
+        metadata:
+        [{index: (act, [specific1, specific2, specific3, ...]])}, {index: (act, gsd)}, {index: (act, gsd)}]
         """
         self.metadata = []
 
@@ -216,7 +219,6 @@ class SimulationScript:
 
         return np.array(bw_uncertainties, dtype=bwp.UNCERTAINTY_DTYPE)
 
-    
     def prepare_bw_matrix(self, tech_matrix, bio_matrix, cf_matrix, activities):
         """
         Transform matrices data to bw matrices data, ready for the datapackages.
@@ -249,7 +251,7 @@ class SimulationScript:
             (cf_data, cf_indices)
         ]
     
-    def add_multifunctionality_flip(self, extend_data: pd.DataFrame, flip_column: str, dp_flip: np.ndarray, dp_indices: np.ndarray) -> np.ndarray:
+    def add_multifunctionality_flip(self, extend_data: pd.DataFrame, act_column: str, flip_column: str, dp_flip: np.ndarray, dp_indices: np.ndarray, activities: list) -> np.ndarray:
         """
         Add flip sign for multifunctionality foreground system.
         
@@ -259,21 +261,33 @@ class SimulationScript:
             * dp_flip: the prepared flip numpy array for datapackage.
             * dp_indices: the prepared indices numpy array for datapackage.
         """
+        activities = ["extra_column"] + activities
         for flip, indices in zip(dp_flip, dp_indices):
             if indices[1] == 0:
-                if extend_data[[flip_column]][indices[0]] == True:
-                    dp_flip[indices[0]] = True
+                flip_sign = extend_data[extend_data[act_column] == activities[indices[0]]][flip_column]
+                if not flip_sign.empty:
+                    flip_sign = flip_sign.iloc[0]
+                    if flip_sign == True:
+                        dp_flip[indices[0]] = True
+                else:
+                    pass
 
         return dp_flip
     
-    def add_multifunctionality_negative(self, extend_data, negative_column, dp_uncertainty, dp_indices):
+    def add_multifunctionality_negative(self, extend_data, act_column: str, negative_column: str, dp_uncertainty, dp_indices, activities: list):
         """
         Add uncertainty negative for multifunctionality foreground system.
         """
+        activities = ["extra_column"] + activities
         for uncertainty, indices in zip(dp_uncertainty, dp_indices):
             if indices[1] == 0:
-                if extend_data[[negative_column]][indices[0]] == True:
-                    dp_uncertainty[indices[0]][-1] = True
+                if indices[0] >= len(activities):
+                    negative_sign = extend_data[extend_data[act_column] == activities[indices[0]-len(activities)]][negative_column] # minus technosphere row.
+                    pos = dp_indices.tolist().index((indices[0], indices[1]))
+                    if not negative_sign.empty:
+                        dp_uncertainty[pos][-1] = True
+                    else:
+                        pass
 
         return dp_uncertainty
 
@@ -283,7 +297,10 @@ class SimulationScript:
         tech_data, tech_indices, tech_flip = datapackage_data[0]
         bio_data, bio_indices = datapackage_data[1]
         cf_data, cf_indices = datapackage_data[2]
-        tech_uncertainty, bio_uncertainty, cf_uncerainty = uncertainty[0], uncertainty[1], uncertainty[2]
+        if uncertainty is None:
+            tech_uncertainty, bio_uncertainty, cf_uncerainty = None, None, None
+        else:
+            tech_uncertainty, bio_uncertainty, cf_uncerainty = uncertainty[0], uncertainty[1], uncertainty[2]
 
         dp = bwp.create_datapackage()
         dp.add_persistent_vector(

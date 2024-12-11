@@ -51,12 +51,13 @@ GHG = ["CO2 - combustion - air",
 
 CFS = [1., 1., 1., 1., 1., 1., 27.0, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 273., 273., 25200.]
 
-COUNTRY_FILE = "fake_gsd_data/Grouping_reg.csv"
-SECTOR_FILE = "fake_gsd_data/Grouping_sec.csv"
-GSD_FILE = "fake_gsd_data/GSD_sec_reg.csv"
+COUNTRY_FILE = "../gsd_data/Grouping_reg.csv"
+SECTOR_FILE = "../gsd_data/Grouping_sec.csv"
+GSD_FILE = "../gsd_data/GSD_sec_reg.csv"
+GSD_SMALL_FILE = "../gsd_data/GSD_background_pedigree_exiobase_small.csv"
 
-BIG_EXTEND = "/Users/bp45th/Downloads/20241120_foreground_system_big.csv"
-SMALL_EXTEND = "/Users/bp45th/Downloads/20241121_foreground_system_small.csv"
+BIG_EXTEND = "../extend_data/20241121_foreground_system_big.csv"
+SMALL_EXTEND = "../extend_data/20241121_foreground_system_small.csv"
 
 # COMBINED PARAMETERS FOR PHASE 2 EXPERIMENTS (WITH EXTRA DATA)
 COMBINED_PARAMETERS = [(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE, SELECTED_AGGREGATED, EXIOBASE_AGGREGATED_OUTPUT, "EXIOBASE AGGREGATED", SMALL_EXTEND), (EXIOBASE_A_FILE, EXIOBASE_S_FILE, SELECTED_EXIOBASE, EXIOBASE_OUTPUT, "EXIOBASE", BIG_EXTEND)]

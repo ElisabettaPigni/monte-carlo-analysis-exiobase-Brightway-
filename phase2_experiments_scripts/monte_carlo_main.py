@@ -17,8 +17,9 @@ def create_static_datapackage(a_file, s_file, extend_file):
     tech_matrix = simu.form_tech_matrix(raw_tech)
     
     # add extra data to technosphere 
-    extend_data = pd.read_csv(extend_file, delimiter=";").iloc[:, :2]
-    tech_matrix_new = simu.extend_matrix(tech_matrix, extend_data, activities, is_technosphere=True)
+    extend_data_tech = pd.read_csv(extend_file, delimiter=";")
+    extend_data_amount = extend_data_tech.iloc[:, :2]
+    tech_matrix_new = simu.extend_matrix(tech_matrix, extend_data_amount, activities, is_technosphere=True)
     if not (tech_matrix_new.shape[0] == tech_matrix.shape[0]+1 and tech_matrix_new.shape[1] == tech_matrix.shape[1]+1):
         print("Add column and row to technosphere failed!")
 
@@ -32,8 +33,9 @@ def create_static_datapackage(a_file, s_file, extend_file):
                                  "Exchange uncertainty type": 1,
                                  "Exchange loc": 1.7263316639056,
                                  "Exchange scale": 0,
-                                 "Exchange negative": False}]).iloc[:, :2]
-    bio_matrix_new = simu.extend_matrix(bio_matrix, extend_data_bio, GHG, is_technosphere=False)
+                                 "Exchange negative": False}])
+    extend_data_bio_amount = extend_data_bio.iloc[:, :2]
+    bio_matrix_new = simu.extend_matrix(bio_matrix, extend_data_bio_amount, GHG, is_technosphere=False)
     if not (bio_matrix_new.shape[0] == bio_matrix.shape[0] and bio_matrix_new.shape[1] == bio_matrix.shape[1]+1):
         print("Add column and row to biosphere failed!")
     
@@ -46,19 +48,17 @@ def create_static_datapackage(a_file, s_file, extend_file):
     bio_data, bio_indices = datapackage_data[1]
 
     # add multifuncionality flip
-    tech_flip = simu.add_multifunctionality_flip(extend_data, "Exchange negative", tech_flip, tech_indices)
+    tech_flip = simu.add_multifunctionality_flip(extend_data_tech, extend_data_tech.columns[0], "Exchange negative", tech_flip, tech_indices, activities)
     
-    # add multifuncionality uncertainty negative
-    tech_uncertainty = simu.add_multifunctionality_negative(extend_data, "Exchange negative", tech_uncertainty, tech_indices)
-    bio_uncertainty = simu.add_multifunctionality_negative(extend_data_bio, "Exchange negative", bio_uncertainty, bio_indices)
-    
-    datapackage = simu.prepare_datapackage(datapackage_data, uncertainty=[tech_uncertainty, bio_uncertainty, None])
+    datapackage = simu.prepare_datapackage(datapackage_data)
     
     return datapackage
     
-def create_stochastic_datapackage(a_file, s_file, extend_file):
+def create_stochastic_datapackage(a_file, s_file, extend_file, exiobase_type):
     # get all activities
     activities = simu.get_activities(a_file, delimiter='\t')
+    simu.metadata = [{0: ("extra_column")}]
+    simu.metadata = simu.metadata + [{activities.index(act) + 1: (act)} for act in activities]
 
     # technosphere matrix
     tech_df = pd.read_table(a_file, sep='\t', header=None, low_memory=False)
@@ -66,8 +66,9 @@ def create_stochastic_datapackage(a_file, s_file, extend_file):
     tech_matrix = simu.form_tech_matrix(raw_tech)
     
     # add extra data to technosphere 
-    extend_data = pd.read_csv(extend_file, delimiter=";").iloc[:, :2]
-    tech_matrix_new = simu.extend_matrix(tech_matrix, extend_data, activities, is_technosphere=True)
+    extend_data_tech = pd.read_csv(extend_file, delimiter=";")
+    extend_data_tech_amount = extend_data_tech.iloc[:, :2]
+    tech_matrix_new = simu.extend_matrix(tech_matrix, extend_data_tech_amount, activities, is_technosphere=True)
     if not (tech_matrix_new.shape[0] == tech_matrix.shape[0]+1 and tech_matrix_new.shape[1] == tech_matrix.shape[1]+1):
         print("Add column and row to technosphere failed!")
 
@@ -81,8 +82,9 @@ def create_stochastic_datapackage(a_file, s_file, extend_file):
                                  "Exchange uncertainty type": 1,
                                  "Exchange loc": 1.7263316639056,
                                  "Exchange scale": 0,
-                                 "Exchange negative": False}]).iloc[:, :2]
-    bio_matrix_new = simu.extend_matrix(bio_matrix, extend_data_bio, GHG, is_technosphere=False)
+                                 "Exchange negative": False}])
+    extend_data_bio_amount = extend_data_bio.iloc[:, :2]
+    bio_matrix_new = simu.extend_matrix(bio_matrix, extend_data_bio_amount, GHG, is_technosphere=False)
     if not (bio_matrix_new.shape[0] == bio_matrix.shape[0] and bio_matrix_new.shape[1] == bio_matrix.shape[1]+1):
         print("Add column and row to biosphere failed!")
     
@@ -95,33 +97,43 @@ def create_stochastic_datapackage(a_file, s_file, extend_file):
     bio_data, bio_indices = datapackage_data[1]
 
     # find and save pedigree undertainty
-    country_region, sector_seccat, region_sector_dfs = simu.map_pedigree_uncertainty(COUNTRY_FILE, SECTOR_FILE, GSD_FILE)
-    for i in range(len(simu.metadata)):
-        if 0 in simu.metadata[i]: # skip extra column
-            continue
-        for index, act in simu.metadata[i].items():
-            gsd = simu.find_pedigree_uncertainty(act, country_region, sector_seccat, region_sector_dfs)
-            simu.metadata[i][index] = (act, gsd)
+    if exiobase_type == "EXIOBASE":
+        country_region, sector_seccat, region_sector_dfs = simu.map_pedigree_uncertainty(COUNTRY_FILE, SECTOR_FILE, GSD_FILE)
+        for i in range(len(simu.metadata)):
+            if 0 in simu.metadata[i]: # skip extra column
+                continue
+            
+            for index, act in simu.metadata[i].items():
+                gsd = simu.find_pedigree_uncertainty(act, country_region, sector_seccat, region_sector_dfs)
+                simu.metadata[i][index] = (act, gsd)
+    else:
+        df = pd.read_csv(GSD_SMALL_FILE, delimiter=";")
+        for i in range(len(simu.metadata)):
+            if 0 in simu.metadata[i]: # skip extra column
+                continue
+            
+            for index, act in simu.metadata[i].items():
+                gsd = df[df[df.columns[0]] == act][df.columns[1]].iloc[0]
+                simu.metadata[i][index] = (act, gsd)
 
     # find and save specific uncertainty
-    specific_uncertainty_df = simu.file_preprocessing("/Users/bp45th/Downloads/20241121_foreground_system_small.csv", ";", "Exiobase_small_col", activities)
+    specific_uncertainty_df = simu.file_preprocessing(extend_file, ";", extend_data_tech.columns[0], activities)
     uncertainty_df = specific_uncertainty_df["u"]
     uncertainty_df = uncertainty_df.where(pd.notnull(uncertainty_df), 0)
     for i in range(len(simu.metadata)):
         if 0 in simu.metadata[i]:
             for key, value in simu.metadata[i].items():
-                simu.metadata[i][key] = (value, (uncertainty_df.to_list(), ))
-
+                simu.metadata[i][key] = (value, uncertainty_df.to_list())
     # add pedigree and specific uncertainty
     tech_uncertainty = simu.add_uncertainty(tech_data, tech_indices, tech_flip)
     bio_uncertainty = simu.add_uncertainty(bio_data, bio_indices, None)
     
     # add multifuncionality flip
-    tech_flip = simu.add_multifunctionality_flip(extend_data, "Exchange negative", tech_flip, tech_indices)
+    tech_flip = simu.add_multifunctionality_flip(extend_data_tech, extend_data_tech.columns[0], "Exchange negative", tech_flip, tech_indices, activities)
     
     # add multifuncionality uncertainty negative
-    tech_uncertainty = simu.add_multifunctionality_negative(extend_data, "Exchange negative", tech_uncertainty, tech_indices)
-    bio_uncertainty = simu.add_multifunctionality_negative(extend_data_bio, "Exchange negative", bio_uncertainty, bio_indices)
+    tech_uncertainty = simu.add_multifunctionality_negative(extend_data_tech, extend_data_tech.columns[0], "Exchange negative", tech_uncertainty, tech_indices, activities)
+    bio_uncertainty = simu.add_multifunctionality_negative(extend_data_bio, extend_data_bio.columns[0], "Exchange negative", bio_uncertainty, bio_indices, activities)
 
     datapackage = simu.prepare_datapackage(datapackage_data, uncertainty=[tech_uncertainty, bio_uncertainty, None])
     
