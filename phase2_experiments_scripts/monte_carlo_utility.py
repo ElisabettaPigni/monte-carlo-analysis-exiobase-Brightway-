@@ -21,6 +21,17 @@ class SimulationScript:
         """
         self.metadata = []
 
+    def get_activities(self, a_file_path: str, delimiter: str) -> list:
+        """
+        Get all activities by combing <country_name> and <sector_name>.
+        """
+        df = pd.read_csv(a_file_path, delimiter=delimiter, header=None, low_memory=False)
+        countries = df.iloc[3:, 0].unique().tolist()
+        sectors = df.iloc[3:, 1].unique().tolist()
+        activities = [ x + '-' + y for x in countries for y in sectors]
+
+        return activities
+
     def file_preprocessing(self, file_name, delimiter: str, column_name: str, expacted_order: list):
         """
         Preprocess a file and return a DataFrame with the desired order.
@@ -29,13 +40,6 @@ class SimulationScript:
         df_sorted = df.set_index(column_name).reindex(expacted_order).reset_index()
 
         return df_sorted
-
-    def get_index(self, activities: list, activity_name: str) -> int:
-        """
-        Get corresponding index for an activity.
-        """
-        index = activities.index(activity_name)
-        return index
     
     def form_tech_matrix(self, raw_tech: pd.DataFrame):
         identity_matrix = np.identity(len(raw_tech))
@@ -44,6 +48,7 @@ class SimulationScript:
 
         return tech_matrix
 
+    # only for adding one column.
     def extend_matrix(self, original_matrix, extend_data: pd.DataFrame, names: list, is_technosphere=True):
         """
         Concatenage additional column and line to the matrix.
@@ -53,13 +58,17 @@ class SimulationScript:
             row = np.zeros([original_matrix.shape[1]]).reshape(1, -1)
             column = np.zeros([original_matrix.shape[0]])
             for act, data in zip(extend_data.iloc[:, 0], extend_data.iloc[:, 1]):
-                column[self.get_index(names, act)] = data
+                column[names.index(act)] = abs(data)
             column = np.nan_to_num(column, nan=0)
             column = np.insert(column, 0, 1)
             column = np.array([column]).T
             extended_matrix = np.concatenate((column, np.concatenate((row, original_matrix), axis=0)), axis=1)
         else:
-            column = np.zeros([original_matrix.shape[0]]).reshape(1, -1).T
+            column = np.zeros([original_matrix.shape[0]])
+            for act, data in zip(extend_data.iloc[:, 0], extend_data.iloc[:, 1]):
+                column[names.index(act)] = abs(data)
+            column = np.nan_to_num(column, nan=0)
+            column = np.array([column]).T
             extended_matrix = np.concatenate((column, original_matrix), axis=1)
 
         return extended_matrix
@@ -239,6 +248,34 @@ class SimulationScript:
             (bio_data, bio_indices),
             (cf_data, cf_indices)
         ]
+    
+    def add_multifunctionality_flip(self, extend_data: pd.DataFrame, flip_column: str, dp_flip: np.ndarray, dp_indices: np.ndarray) -> np.ndarray:
+        """
+        Add flip sign for multifunctionality foreground system.
+        
+        Parameters:
+            * extend_data: user input file in dataframe format.
+            * flip_column: the column name of flip sign in user's input.
+            * dp_flip: the prepared flip numpy array for datapackage.
+            * dp_indices: the prepared indices numpy array for datapackage.
+        """
+        for flip, indices in zip(dp_flip, dp_indices):
+            if indices[1] == 0:
+                if extend_data[[flip_column]][indices[0]] == True:
+                    dp_flip[indices[0]] = True
+
+        return dp_flip
+    
+    def add_multifunctionality_negative(self, extend_data, negative_column, dp_uncertainty, dp_indices):
+        """
+        Add uncertainty negative for multifunctionality foreground system.
+        """
+        for uncertainty, indices in zip(dp_uncertainty, dp_indices):
+            if indices[1] == 0:
+                if extend_data[[negative_column]][indices[0]] == True:
+                    dp_uncertainty[indices[0]][-1] = True
+
+        return dp_uncertainty
 
     # TODO: uncertainty is None currently
     # Is it common people add ucnertainty to cf matrix?
@@ -280,11 +317,57 @@ class SimulationScript:
         lca.lcia()
 
         return lca.score
+    
+    def perform_static(self, index, datapackage, directory, k, t, myact):
+        """
+        Perform static simulation.
+        """
+        lca = bc.LCA(
+            demand={index: 1},
+            data_objs=[datapackage],
+        )
+        lca.lci()
+        lca.lcia()
 
-    def manual_lca(self, A, B, C, A_, index):
+        os.makedirs(directory, exist_ok=True)
+        filename = os.path.join(directory, f"CASE_{k}_{t}_MC_simulations_{myact}.csv")
+
+        with open(filename, "w") as file:
+            file.write("kg CO2eq\n") # Write the header
+            file.write(f"{lca.score}")
+            print(f"Static LCA result saved to {filename}.")
+    
+    def perform_simu(self, index, datapackage, directory, k, myact, t, u, batch_size=50, num_batches=10):
+        """
+        Perform Monte Carlo simulation and save the lca score.
+        """
+        lca = bc.LCA(
+            demand={index: 1},
+            data_objs=[datapackage],
+            use_distributions=True,
+        )
+        lca.lci()
+        lca.lcia()
+
+        print('LCA score (with uncertainty): ', lca.score)
+
+        os.makedirs(directory, exist_ok=True)
+        filename = os.path.join(directory, f"CASE_{k}_{t}_{u}_MC_simulations_{myact}.csv")
+
+        with open(filename, "w") as file:
+            file.write("kg CO2eq\n")
+            for p in range(num_batches):
+                batch_results = [lca.score for _ in zip(range(batch_size), lca)]
+                df_batch = pd.DataFrame(batch_results, columns=["kg CO2eq"])
+                df_batch.to_csv(file, header=False, index=False)
+                print(f"Batch {p} saved to {filename}.")
+
+        print(f"Results saved to {filename}.")
+
+    def manual_lca(self, A, B, C, index):
         f = np.zeros(len(A))
         f[index] = 1
-        lca_score = np.sum(C.dot(B.dot((np.linalg.inv(A_)).dot(f))))
+        lca_score = np.sum(C.dot(B.dot((np.linalg.inv(A)).dot(f))))
 
         return lca_score
 

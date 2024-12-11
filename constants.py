@@ -18,13 +18,12 @@ SELECTED_EXIOBASE = [("CN-Railway transportation services", 6156), ("DE-Biodiese
 SELECTED_AGGREGATED = [("RoW-Services", 68), ("EU28-Biodiesels", 11), ("EU28-Agriculture-Forestry-Fishing", 0), ("EU28-Basic iron and steel and of ferro-alloys and first products thereof", 13), ("EU28-Energy", 1), ("RoW-Waste management", 71), ("EU28-Services", 30), ("EU28-Industry", 3)]
 
 # UNCERTAINTY
-DIST_TYPE = ["static", "uniform", "log-normal"] # Define the types of distribution
+DIST_TYPE = ["static", "uniform", "log-normal", "pedigree"] # Define the types of distribution
 U_UNIFORM = [0.1, 0.2, 0.3] # Define the uncertainty for uniform distribution
 U_LOG = [1.106, 1.225, 1.363] # Define the uncertainty for log-normal distribution
 
-# COMBINED PARAMETERS
-COMBINED_PARAMETERS = [(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE, SELECTED_AGGREGATED, EXIOBASE_AGGREGATED_OUTPUT, "EXIOBASE AGGREGATED"), (EXIOBASE_A_FILE, EXIOBASE_S_FILE, SELECTED_EXIOBASE, EXIOBASE_OUTPUT, "EXIOBASE")]
-
+# COMBINED PARAMETERS FOR PHASE 1 EXPERIMENTS (WITHOUT EXTRA DATA)
+# COMBINED_PARAMETERS = [(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE, SELECTED_AGGREGATED, EXIOBASE_AGGREGATED_OUTPUT, "EXIOBASE AGGREGATED"), (EXIOBASE_A_FILE, EXIOBASE_S_FILE, SELECTED_EXIOBASE, EXIOBASE_OUTPUT, "EXIOBASE")]
 
 # ---------- CONSTANTS FOR CASE STUDY ----------
 METHOD = ('EF v3.1', 'climate change', 'global warming potential (GWP100)')
@@ -58,6 +57,9 @@ GSD_FILE = "fake_gsd_data/GSD_sec_reg.csv"
 
 BIG_EXTEND = "/Users/bp45th/Downloads/20241120_foreground_system_big.csv"
 SMALL_EXTEND = "/Users/bp45th/Downloads/20241121_foreground_system_small.csv"
+
+# COMBINED PARAMETERS FOR PHASE 2 EXPERIMENTS (WITH EXTRA DATA)
+COMBINED_PARAMETERS = [(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE, SELECTED_AGGREGATED, EXIOBASE_AGGREGATED_OUTPUT, "EXIOBASE AGGREGATED", SMALL_EXTEND), (EXIOBASE_A_FILE, EXIOBASE_S_FILE, SELECTED_EXIOBASE, EXIOBASE_OUTPUT, "EXIOBASE", BIG_EXTEND)]
 
 
 # ---------- CONSTANTS FOR PLOT DRAWING ----------

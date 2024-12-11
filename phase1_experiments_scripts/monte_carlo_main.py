@@ -1,10 +1,12 @@
+import os
+import sys
+sys.path.append(os.path.abspath(".."))
 from constants import *
 import time
 import pandas as pd
-# from monte_carlo_utility import *
-from new_script import *
+from monte_carlo_utility import *
 
-simu = SimulationScript_test()
+simu = SimulationScript()
 
 def data_prepare():
     # technosphere matrix
@@ -76,10 +78,11 @@ def run_experiments(datapackage):
 
 
 if __name__ == "__main__":
+    simu.build_bw_matrix(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE)
     # original static
-    tech_matrix, bio_matrix, cf_matrix = data_prepare()
-    datapackage = create_datapackages(tech_matrix, bio_matrix, cf_matrix)
-    run_experiments(datapackage)
+    # tech_matrix, bio_matrix, cf_matrix = data_prepare()
+    # datapackage = create_datapackages(tech_matrix, bio_matrix, cf_matrix)
+    # run_experiments(datapackage)
 
     # # additional data static
     # tech_matrix, bio_matrix, cf_matrix = data_prepare_addional_data()
