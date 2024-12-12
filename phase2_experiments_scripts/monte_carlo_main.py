@@ -9,12 +9,12 @@ simu = SimulationScript()
 
 def create_static_datapackage(a_file, s_file, extend_file):
     # get all activities
-    activities = simu.get_activities(a_file, delimiter='\t')
+    activities = simu.get_activities(a_file, delimiter='\t')  # activities without extra column.
 
     # technosphere matrix
     tech_df = pd.read_table(a_file, sep='\t', header=None, low_memory=False)
     raw_tech = tech_df.iloc[3:, 2:].astype('float').to_numpy()
-    tech_matrix = simu.form_tech_matrix(raw_tech)
+    tech_matrix = simu.form_tech_matrix(raw_tech)  # tech_data without extra column
     
     # add extra data to technosphere 
     extend_data_tech = pd.read_csv(extend_file, delimiter=";")
@@ -43,7 +43,7 @@ def create_static_datapackage(a_file, s_file, extend_file):
     cf_matrix = np.diagflat(CFS)
 
     # prepare datapackage data
-    datapackage_data = simu.prepare_bw_matrix(tech_matrix, bio_matrix, cf_matrix, ['extra'] + activities)
+    datapackage_data = simu.prepare_bw_matrix(tech_matrix, bio_matrix, cf_matrix, ['extra_column'] + activities)
     tech_data, tech_indices, tech_flip = datapackage_data[0]
     bio_data, bio_indices = datapackage_data[1]
 
@@ -52,7 +52,7 @@ def create_static_datapackage(a_file, s_file, extend_file):
     
     datapackage = simu.prepare_datapackage(datapackage_data)
     
-    return datapackage
+    return datapackage, [tech_matrix_new, bio_matrix_new, cf_matrix]
     
 def create_stochastic_datapackage(a_file, s_file, extend_file, exiobase_type):
     # get all activities

@@ -19,7 +19,7 @@ def process_case(parallel_param):
     parallel_param type: tuple
     parallel_param format: (t, myact, index, k, output_dir, datapackage)
     """
-    (t, act, index, k, output_dir, datapackage) = parallel_param[0]
+    (t, act, index, k, output_dir, datapackage) = parallel_param
     print(f"Processing {t} in process: {os.getpid()}")
 
     simu = SimulationScript()
@@ -28,7 +28,7 @@ def process_case(parallel_param):
         perform_static(index, datapackage, output_dir, k, act, t)
     elif t == "pedigree":
         perform_stochastic(index, datapackage, output_dir, k, act, t)
-        
+    
     print(f"{t} simulation is done.")
 
 
@@ -44,17 +44,23 @@ if __name__ == "__main__":
         k = 0
         for t in DIST_TYPE:
             if t == "static":
-                datapackage = create_static_datapackage(param[0], param[1], param[5])
+                datapackage, matrices = create_static_datapackage(param[0], param[1], param[5])
                 print("Datapackage are formatted.")
                 for myact, index in param[2]:
                     k += 1
                     parallel_params.append((t, myact, index, k, param[3], datapackage))
+
+                    tech_matrix_new, bio_matrix_new, cf_matrix = matrices
+                    manual_tech_Data = -tech_matrix_new
+                    np.fill_diagonal(manual_tech_Data, -manual_tech_Data.diagonal())
+                    lca_score_manual = simu.manual_lca(manual_tech_Data, bio_matrix_new, cf_matrix, index + 1)
+                    print(f"Manually calculated lca score: {lca_score_manual, myact}")
             elif t == "pedigree":
                 datapackage = create_stochastic_datapackage(param[0], param[1], param[5], param[4])
                 print("Datapackage are formatted.")
                 for myact, index in param[2]:
                     k += 1
-                    parallel_params.append((t, myact, index, k, param[3], datapackage))
+                    parallel_params.append((t, myact, index + 1, k, param[3], datapackage))
             
         max_workers = os.cpu_count() if os.cpu_count() else 4
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
