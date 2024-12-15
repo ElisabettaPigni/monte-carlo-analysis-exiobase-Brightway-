@@ -7,25 +7,27 @@ from constants import *
 
 simu = SimulationScript()
 
-def create_static_datapackage(a_file, s_file, extend_file):
+def prepare_datapackage_matrices(a_file, s_file, extend_file):
     # get all activities
-    activities = simu.get_activities(a_file, delimiter='\t')  # activities without extra column.
+    activities = simu.get_activities(a_file, delimiter='\t')
+    activities = ["extra_column"] + activities  # activities with extra column.
 
-    # technosphere matrix
+    # background database technosphere matrix
     tech_df = pd.read_table(a_file, sep='\t', header=None, low_memory=False)
     raw_tech = tech_df.iloc[3:, 2:].astype('float').to_numpy()
-    tech_matrix = simu.form_tech_matrix(raw_tech)  # tech_data without extra column
-    
+
     # add extra data to technosphere 
     extend_data_tech = pd.read_csv(extend_file, delimiter=";")
     extend_data_amount = extend_data_tech.iloc[:, :2]
-    tech_matrix_new = simu.extend_matrix(tech_matrix, extend_data_amount, activities, is_technosphere=True)
-    if not (tech_matrix_new.shape[0] == tech_matrix.shape[0]+1 and tech_matrix_new.shape[1] == tech_matrix.shape[1]+1):
+    tech_matrix_extended = simu.extend_matrix(raw_tech, extend_data_amount, activities, is_technosphere=True)
+    if not (raw_tech.shape[0]+1 == tech_matrix_extended.shape[0] and raw_tech.shape[1]+1 == tech_matrix_extended.shape[1]):
         print("Add column and row to technosphere failed!")
+
+    tech_matrix = simu.form_tech_matrix(tech_matrix_extended)  # tech_data without extra column
 
     # biosphere matrix
     bio_df = pd.read_csv(s_file, header=[0,1], index_col=[0], sep='\t', low_memory=False)
-    bio_matrix = simu.form_bio_matrix(bio_df, GHG)
+    raw_bio = simu.form_bio_matrix(bio_df, GHG)
 
     # add extra data to biosphere
     extend_data_bio = pd.DataFrame([{"Exiobase_big_col (matrix B)": "N2O - combustion - air",
@@ -35,64 +37,26 @@ def create_static_datapackage(a_file, s_file, extend_file):
                                  "Exchange scale": 0,
                                  "Exchange negative": False}])
     extend_data_bio_amount = extend_data_bio.iloc[:, :2]
-    bio_matrix_new = simu.extend_matrix(bio_matrix, extend_data_bio_amount, GHG, is_technosphere=False)
-    if not (bio_matrix_new.shape[0] == bio_matrix.shape[0] and bio_matrix_new.shape[1] == bio_matrix.shape[1]+1):
+    bio_matrix = simu.extend_matrix(raw_bio, extend_data_bio_amount, GHG, is_technosphere=False)
+    if not (raw_bio.shape[0] == bio_matrix.shape[0] and raw_bio.shape[1]+1 == bio_matrix.shape[1]):
         print("Add column and row to biosphere failed!")
     
     # characterization factor matrix
     cf_matrix = np.diagflat(CFS)
+
+    return [tech_matrix, bio_matrix, cf_matrix, activities]
+
+def create_static_datapackage(tech_matrix, bio_matrix, cf_matrix, activities):
+    datapackage_data = simu.prepare_bw_matrix(tech_matrix, bio_matrix, cf_matrix, activities)
+    datapackage = simu.prepare_datapackage(datapackage_data)
+    
+    return datapackage
+    
+def create_stochastic_datapackage(tech_matrix, bio_matrix, cf_matrix, activities, exiobase_type, extend_file):
+    simu.metadata = [{activities.index(act): (act)} for act in activities]
 
     # prepare datapackage data
     datapackage_data = simu.prepare_bw_matrix(tech_matrix, bio_matrix, cf_matrix, ['extra_column'] + activities)
-    tech_data, tech_indices, tech_flip = datapackage_data[0]
-    bio_data, bio_indices = datapackage_data[1]
-
-    # add multifuncionality flip
-    tech_flip = simu.add_multifunctionality_flip(extend_data_tech, extend_data_tech.columns[0], "Exchange negative", tech_flip, tech_indices, activities)
-    
-    datapackage = simu.prepare_datapackage(datapackage_data)
-    
-    return datapackage, [tech_matrix_new, bio_matrix_new, cf_matrix]
-    
-def create_stochastic_datapackage(a_file, s_file, extend_file, exiobase_type):
-    # get all activities
-    activities = simu.get_activities(a_file, delimiter='\t')
-    simu.metadata = [{0: ("extra_column")}]
-    simu.metadata = simu.metadata + [{activities.index(act) + 1: (act)} for act in activities]
-
-    # technosphere matrix
-    tech_df = pd.read_table(a_file, sep='\t', header=None, low_memory=False)
-    raw_tech = tech_df.iloc[3:, 2:].astype('float').to_numpy()
-    tech_matrix = simu.form_tech_matrix(raw_tech)
-    
-    # add extra data to technosphere 
-    extend_data_tech = pd.read_csv(extend_file, delimiter=";")
-    extend_data_tech_amount = extend_data_tech.iloc[:, :2]
-    tech_matrix_new = simu.extend_matrix(tech_matrix, extend_data_tech_amount, activities, is_technosphere=True)
-    if not (tech_matrix_new.shape[0] == tech_matrix.shape[0]+1 and tech_matrix_new.shape[1] == tech_matrix.shape[1]+1):
-        print("Add column and row to technosphere failed!")
-
-    # biosphere matrix
-    bio_df = pd.read_csv(s_file, header=[0,1], index_col=[0], sep='\t', low_memory=False)
-    bio_matrix = simu.form_bio_matrix(bio_df, GHG)
-
-    # add extra data to biosphere
-    extend_data_bio = pd.DataFrame([{"Exiobase_big_col (matrix B)": "N2O - combustion - air",
-                                 "Amount": 5.62,
-                                 "Exchange uncertainty type": 1,
-                                 "Exchange loc": 1.7263316639056,
-                                 "Exchange scale": 0,
-                                 "Exchange negative": False}])
-    extend_data_bio_amount = extend_data_bio.iloc[:, :2]
-    bio_matrix_new = simu.extend_matrix(bio_matrix, extend_data_bio_amount, GHG, is_technosphere=False)
-    if not (bio_matrix_new.shape[0] == bio_matrix.shape[0] and bio_matrix_new.shape[1] == bio_matrix.shape[1]+1):
-        print("Add column and row to biosphere failed!")
-    
-    # characterization factor matrix
-    cf_matrix = np.diagflat(CFS)
-
-    # prepare datapackage data
-    datapackage_data = simu.prepare_bw_matrix(tech_matrix, bio_matrix, cf_matrix, ['extra'] + activities)
     tech_data, tech_indices, tech_flip = datapackage_data[0]
     bio_data, bio_indices = datapackage_data[1]
 
@@ -117,26 +81,37 @@ def create_stochastic_datapackage(a_file, s_file, extend_file, exiobase_type):
                 simu.metadata[i][index] = (act, gsd)
 
     # find and save specific uncertainty
-    specific_uncertainty_df = simu.file_preprocessing(extend_file, ";", extend_data_tech.columns[0], activities)
-    uncertainty_df = specific_uncertainty_df["u"]
+    uncertainty_spec_df = pd.read_csv(extend_file, delimiter=";")
+    uncertainty_df = uncertainty_spec_df.loc[:, [uncertainty_spec_df.columns[0], uncertainty_spec_df.columns[3]]].copy()
     uncertainty_df = uncertainty_df.where(pd.notnull(uncertainty_df), 0)
+    uncertainty_spec = np.zeros([len(activities)])
+    for act in activities:
+        if uncertainty_df[uncertainty_df.iloc[:, 0] == act][uncertainty_spec_df.columns[3]].empty:
+            uncertainty_spec[activities.index(act)] = 0
+        else:
+            uncertainty_spec[activities.index(act)] = uncertainty_df[uncertainty_df.iloc[:, 0] == act][uncertainty_spec_df.columns[3]].iloc[0]
     for i in range(len(simu.metadata)):
         if 0 in simu.metadata[i]:
             for key, value in simu.metadata[i].items():
-                simu.metadata[i][key] = (value, uncertainty_df.to_list())
+                simu.metadata[i][key] = (value, uncertainty_spec.tolist())
+
     # add pedigree and specific uncertainty
     tech_uncertainty = simu.add_uncertainty(tech_data, tech_indices, tech_flip)
     bio_uncertainty = simu.add_uncertainty(bio_data, bio_indices, None)
     
-    # add multifuncionality flip
-    tech_flip = simu.add_multifunctionality_flip(extend_data_tech, extend_data_tech.columns[0], "Exchange negative", tech_flip, tech_indices, activities)
-    
-    # add multifuncionality uncertainty negative
+    # add multifunctionality negative
+    extend_data_tech = pd.read_csv(extend_file, delimiter=";")
+    extend_data_bio = pd.DataFrame([{"Exiobase_big_col (matrix B)": "N2O - combustion - air",
+                                 "Amount": 5.62,
+                                 "Exchange uncertainty type": 1,
+                                 "Exchange loc": 1.7263316639056,
+                                 "Exchange scale": 0,
+                                 "Exchange negative": False}])
     tech_uncertainty = simu.add_multifunctionality_negative(extend_data_tech, extend_data_tech.columns[0], "Exchange negative", tech_uncertainty, tech_indices, activities)
     bio_uncertainty = simu.add_multifunctionality_negative(extend_data_bio, extend_data_bio.columns[0], "Exchange negative", bio_uncertainty, bio_indices, activities)
 
     datapackage = simu.prepare_datapackage(datapackage_data, uncertainty=[tech_uncertainty, bio_uncertainty, None])
-    
+
     return datapackage
 
 def perform_static(index, datapackage, directory, k, act, t):

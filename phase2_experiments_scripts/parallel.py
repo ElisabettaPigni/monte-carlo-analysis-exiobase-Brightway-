@@ -39,28 +39,22 @@ if __name__ == "__main__":
 
     for param in COMBINED_PARAMETERS:
         print(f"{param[4]} simulation is running...")
-
+        tech_matrix, bio_matrix, cf_matrix, activities = prepare_datapackage_matrices(param[0], param[1], param[5])
         parallel_params = []
         k = 0
         for t in DIST_TYPE:
             if t == "static":
-                datapackage, matrices = create_static_datapackage(param[0], param[1], param[5])
+                datapackage = create_static_datapackage(tech_matrix, bio_matrix, cf_matrix, activities)
                 print("Datapackage are formatted.")
                 for myact, index in param[2]:
                     k += 1
                     parallel_params.append((t, myact, index, k, param[3], datapackage))
-
-                    tech_matrix_new, bio_matrix_new, cf_matrix = matrices
-                    manual_tech_Data = -tech_matrix_new
-                    np.fill_diagonal(manual_tech_Data, -manual_tech_Data.diagonal())
-                    lca_score_manual = simu.manual_lca(manual_tech_Data, bio_matrix_new, cf_matrix, index + 1)
-                    print(f"Manually calculated lca score: {lca_score_manual, myact}")
             elif t == "pedigree":
-                datapackage = create_stochastic_datapackage(param[0], param[1], param[5], param[4])
+                datapackage = create_stochastic_datapackage(tech_matrix, bio_matrix, cf_matrix, activities, param[4], param[5])
                 print("Datapackage are formatted.")
                 for myact, index in param[2]:
                     k += 1
-                    parallel_params.append((t, myact, index + 1, k, param[3], datapackage))
+                    parallel_params.append((t, myact, index + 1, k, param[3], datapackage))  # because add another column
             
         max_workers = os.cpu_count() if os.cpu_count() else 4
         with ProcessPoolExecutor(max_workers=max_workers) as executor:

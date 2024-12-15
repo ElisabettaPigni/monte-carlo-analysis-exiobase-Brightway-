@@ -55,21 +55,23 @@ class SimulationScript:
     def extend_matrix(self, original_matrix, extend_data: pd.DataFrame, names: list, is_technosphere=True):
         """
         Concatenage additional column and line to the matrix.
-        * names: this is the list of activities or emissions.
+        * names: 
+            - For technosphere, this is the list of activities which include all activities for the whole foreground system.
+            - For biosphere, this is the list of emissions.
         """
         if is_technosphere:
-            row = np.zeros([original_matrix.shape[1]]).reshape(1, -1)
-            column = np.zeros([original_matrix.shape[0]])
+            row = np.zeros([original_matrix.shape[1]]).reshape(1, -1)  # this has the same amont of activities as exiobase
+            column = np.zeros([len(names)])  # this has the total amount of the whole foreground system
             for act, data in zip(extend_data.iloc[:, 0], extend_data.iloc[:, 1]):
-                column[names.index(act)] = abs(data)
+                column[names.index(act)] = data
+            column[0] = 1
             column = np.nan_to_num(column, nan=0)
-            column = np.insert(column, 0, 1)
-            column = np.array([column]).T
+            column = np.array([column]).T  # swap the rows and columns of an array.
             extended_matrix = np.concatenate((column, np.concatenate((row, original_matrix), axis=0)), axis=1)
         else:
-            column = np.zeros([original_matrix.shape[0]])
+            column = np.zeros([len(names)])
             for act, data in zip(extend_data.iloc[:, 0], extend_data.iloc[:, 1]):
-                column[names.index(act)] = abs(data)
+                column[names.index(act)] = data
             column = np.nan_to_num(column, nan=0)
             column = np.array([column]).T
             extended_matrix = np.concatenate((column, original_matrix), axis=1)
@@ -150,7 +152,7 @@ class SimulationScript:
         if region_category !=  None and sector_category != None:
             gsd = float(region_sector_dfs[(region_sector_dfs.iloc[:, 0] == region_category) & (region_sector_dfs.iloc[:, 1] == sector_category)]["GSD"].iloc[0])
         else:
-            # print("No GSD found.")
+            print("No GSD found.")
             gsd = None
 
         return gsd
@@ -160,10 +162,6 @@ class SimulationScript:
         scale = np.log(uncertainty)
 
         return loc, scale
-    
-    def get_uncertainty_negative(self, df, column_name):
-        df
-        [column_name]
     
     # TODO: design for pedigree and specific uncertainty
     def add_uncertainty(self, bw_data, bw_indices, bw_flip):
@@ -241,9 +239,10 @@ class SimulationScript:
         cf_data =  cf_sparse.data
         cf_indices = np.array([tuple([coord[0] + max_coor[0] + 1, coord[1] + max_coor[1] + 1]) for coord in cf_coors], dtype=bwp.INDICES_DTYPE)
 
-        tech_poss = list(set(coord[1] for coord in tech_indices))
-        for act, tech_pos in zip(activities, tech_poss):
-            self.metadata.append({tech_pos: act})
+        # TODO: is it good to add metdata here or in the main? I might forgot I add it here. But here the index is definitely correct.
+        # tech_poss = list(set(coord[1] for coord in tech_indices))
+        # for act, tech_pos in zip(activities, tech_poss):
+        #     self.metadata.append({tech_pos: act})
 
         return [
             (tech_data, tech_indices, tech_flip),
@@ -251,28 +250,28 @@ class SimulationScript:
             (cf_data, cf_indices)
         ]
     
-    def add_multifunctionality_flip(self, extend_data: pd.DataFrame, act_column: str, flip_column: str, dp_flip: np.ndarray, dp_indices: np.ndarray, activities: list) -> np.ndarray:
-        """
-        Add flip sign for multifunctionality foreground system.
+    # def add_multifunctionality_flip(self, extend_data: pd.DataFrame, act_column: str, flip_column: str, dp_flip: np.ndarray, dp_indices: np.ndarray, activities: list) -> np.ndarray:
+    #     """
+    #     Add flip sign for multifunctionality foreground system. (It's used when user's input is all positive values and only the last column shows to flip or not.)
         
-        Parameters:
-            * extend_data: user input file in dataframe format.
-            * flip_column: the column name of flip sign in user's input.
-            * dp_flip: the prepared flip numpy array for datapackage.
-            * dp_indices: the prepared indices numpy array for datapackage.
-        """
-        activities = ["extra_column"] + activities
-        for flip, indices in zip(dp_flip, dp_indices):
-            if indices[1] == 0:
-                flip_sign = extend_data[extend_data[act_column] == activities[indices[0]]][flip_column]
-                if not flip_sign.empty:
-                    flip_sign = flip_sign.iloc[0]
-                    if flip_sign == True:
-                        dp_flip[indices[0]] = True
-                else:
-                    pass
+    #     Parameters:
+    #         * extend_data: user input file in dataframe format.
+    #         * flip_column: the column name of flip sign in user's input.
+    #         * dp_flip: the prepared flip numpy array for datapackage.
+    #         * dp_indices: the prepared indices numpy array for datapackage.
+    #     """
+    #     activities = ["extra_column"] + activities
+    #     for flip, indices in zip(dp_flip, dp_indices):
+    #         if indices[1] == 0:
+    #             flip_sign = extend_data[extend_data[act_column] == activities[indices[0]]][flip_column]
+    #             if not flip_sign.empty:
+    #                 flip_sign = flip_sign.iloc[0]
+    #                 if flip_sign == False:
+    #                     dp_flip[indices[0]] = False
+    #             else:
+    #                 pass
 
-        return dp_flip
+    #     return dp_flip
     
     def add_multifunctionality_negative(self, extend_data, act_column: str, negative_column: str, dp_uncertainty, dp_indices, activities: list):
         """
@@ -285,13 +284,15 @@ class SimulationScript:
                     negative_sign = extend_data[extend_data[act_column] == activities[indices[0]-len(activities)]][negative_column] # minus technosphere row.
                     pos = dp_indices.tolist().index((indices[0], indices[1]))
                     if not negative_sign.empty:
-                        dp_uncertainty[pos][-1] = True
+                        if negative_sign == True:
+                            dp_uncertainty[pos][-1] = True
+                        elif negative_sign == False:
+                            dp_uncertainty[pos][-1] = False
                     else:
                         pass
 
         return dp_uncertainty
 
-    # TODO: uncertainty is None currently
     # Is it common people add ucnertainty to cf matrix?
     def prepare_datapackage(self, datapackage_data: List[Tuple[Any, ...]], uncertainty=None):
         tech_data, tech_indices, tech_flip = datapackage_data[0]
