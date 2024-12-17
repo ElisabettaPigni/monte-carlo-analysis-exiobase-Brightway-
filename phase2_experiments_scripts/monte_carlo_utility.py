@@ -75,7 +75,7 @@ class SimulationScript:
             column = np.nan_to_num(column, nan=0)
             column = np.array([column]).T
             extended_matrix = np.concatenate((column, original_matrix), axis=1)
-
+        
         return extended_matrix
     
     def form_bio_matrix(self, bio_df, emissions) -> np.ndarray:
@@ -217,7 +217,7 @@ class SimulationScript:
 
         return np.array(bw_uncertainties, dtype=bwp.UNCERTAINTY_DTYPE)
 
-    def prepare_bw_matrix(self, tech_matrix, bio_matrix, cf_matrix, activities):
+    def prepare_bw_matrix(self, tech_matrix, bio_matrix, cf_matrix):
         """
         Transform matrices data to bw matrices data, ready for the datapackages.
         """
@@ -238,11 +238,6 @@ class SimulationScript:
         cf_coors = np.column_stack(cf_sparse.nonzero())
         cf_data =  cf_sparse.data
         cf_indices = np.array([tuple([coord[0] + max_coor[0] + 1, coord[1] + max_coor[1] + 1]) for coord in cf_coors], dtype=bwp.INDICES_DTYPE)
-
-        # TODO: is it good to add metdata here or in the main? I might forgot I add it here. But here the index is definitely correct.
-        # tech_poss = list(set(coord[1] for coord in tech_indices))
-        # for act, tech_pos in zip(activities, tech_poss):
-        #     self.metadata.append({tech_pos: act})
 
         return [
             (tech_data, tech_indices, tech_flip),
