@@ -255,7 +255,6 @@ class SimulationScript:
     #         * dp_flip: the prepared flip numpy array for datapackage.
     #         * dp_indices: the prepared indices numpy array for datapackage.
     #     """
-    #     activities = ["extra_column"] + activities
     #     for flip, indices in zip(dp_flip, dp_indices):
     #         if indices[1] == 0:
     #             flip_sign = extend_data[extend_data[act_column] == activities[indices[0]]][flip_column]
@@ -272,7 +271,6 @@ class SimulationScript:
         """
         Add uncertainty negative for multifunctionality foreground system.
         """
-        activities = ["extra_column"] + activities
         for uncertainty, indices in zip(dp_uncertainty, dp_indices):
             if indices[1] == 0:
                 if indices[0] >= len(activities):
