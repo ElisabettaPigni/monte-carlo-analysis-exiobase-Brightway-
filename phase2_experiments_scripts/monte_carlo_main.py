@@ -16,14 +16,14 @@ def prepare_datapackage_matrices(a_file, s_file, extend_file):
     tech_df = pd.read_table(a_file, sep='\t', header=None, low_memory=False)
     raw_tech = tech_df.iloc[3:, 2:].astype('float').to_numpy()
 
+    raw_tech_matrix = simu.form_tech_matrix(raw_tech)  # tech_data without extra column
+
     # add extra data to technosphere 
     extend_data_tech = pd.read_csv(extend_file, delimiter=";")
     extend_data_amount = extend_data_tech.iloc[:, :2]
-    tech_matrix_extended = simu.extend_matrix(raw_tech, extend_data_amount, activities, is_technosphere=True)
-    if not (raw_tech.shape[0]+1 == tech_matrix_extended.shape[0] and raw_tech.shape[1]+1 == tech_matrix_extended.shape[1]):
+    tech_matrix = simu.extend_matrix(raw_tech_matrix, extend_data_amount, activities, is_technosphere=True)
+    if not (raw_tech_matrix.shape[0]+1 == tech_matrix.shape[0] and raw_tech_matrix.shape[1]+1 == tech_matrix.shape[1]):
         print("Add column and row to technosphere failed!")
-
-    tech_matrix = simu.form_tech_matrix(tech_matrix_extended)  # tech_data without extra column
     
     # biosphere matrix
     bio_df = pd.read_csv(s_file, header=[0,1], index_col=[0], sep='\t', low_memory=False)
