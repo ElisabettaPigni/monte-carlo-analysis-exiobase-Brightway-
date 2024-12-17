@@ -24,7 +24,7 @@ def prepare_datapackage_matrices(a_file, s_file, extend_file):
         print("Add column and row to technosphere failed!")
 
     tech_matrix = simu.form_tech_matrix(tech_matrix_extended)  # tech_data without extra column
-
+    
     # biosphere matrix
     bio_df = pd.read_csv(s_file, header=[0,1], index_col=[0], sep='\t', low_memory=False)
     raw_bio = simu.form_bio_matrix(bio_df, GHG)
@@ -47,7 +47,7 @@ def prepare_datapackage_matrices(a_file, s_file, extend_file):
     return [tech_matrix, bio_matrix, cf_matrix, activities]
 
 def create_static_datapackage(tech_matrix, bio_matrix, cf_matrix, activities):
-    datapackage_data = simu.prepare_bw_matrix(tech_matrix, bio_matrix, cf_matrix, activities)
+    datapackage_data = simu.prepare_bw_matrix(tech_matrix, bio_matrix, cf_matrix)
     datapackage = simu.prepare_datapackage(datapackage_data)
     
     return datapackage
@@ -56,7 +56,7 @@ def create_stochastic_datapackage(tech_matrix, bio_matrix, cf_matrix, activities
     simu.metadata = [{activities.index(act): (act)} for act in activities]
 
     # prepare datapackage data
-    datapackage_data = simu.prepare_bw_matrix(tech_matrix, bio_matrix, cf_matrix, ['extra_column'] + activities)
+    datapackage_data = simu.prepare_bw_matrix(tech_matrix, bio_matrix, cf_matrix)
     tech_data, tech_indices, tech_flip = datapackage_data[0]
     bio_data, bio_indices = datapackage_data[1]
 
@@ -119,7 +119,7 @@ def perform_static(index, datapackage, directory, k, act, t):
     Perform static simulation.
     """
     lca = bc.LCA(
-        demand={index: 1},
+        demand={index: 1},  # TODO: 这里是只有1吧，先不修改这里了。
         data_objs=[datapackage],
     )
     lca.lci()
