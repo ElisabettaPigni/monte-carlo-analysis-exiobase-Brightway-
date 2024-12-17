@@ -46,7 +46,7 @@ def prepare_datapackage_matrices(a_file, s_file, extend_file):
 
     return [tech_matrix, bio_matrix, cf_matrix, activities]
 
-def create_static_datapackage(tech_matrix, bio_matrix, cf_matrix, activities):
+def create_static_datapackage(tech_matrix, bio_matrix, cf_matrix):
     datapackage_data = simu.prepare_bw_matrix(tech_matrix, bio_matrix, cf_matrix)
     datapackage = simu.prepare_datapackage(datapackage_data)
     

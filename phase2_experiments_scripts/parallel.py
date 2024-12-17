@@ -44,7 +44,7 @@ if __name__ == "__main__":
         k = 0
         for t in DIST_TYPE:
             if t == "static":
-                datapackage = create_static_datapackage(tech_matrix, bio_matrix, cf_matrix, activities)
+                datapackage = create_static_datapackage(tech_matrix, bio_matrix, cf_matrix)
                 print("Datapackage are formatted.")
                 for myact, index in param[2]:
                     k += 1
