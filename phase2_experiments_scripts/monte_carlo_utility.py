@@ -174,7 +174,7 @@ class SimulationScript:
                     if indices[1] == 0:
                         uncertainty = uncertainty[k]
                         k += 1
-                        if uncertainty == 0:
+                        if uncertainty == 0 or data == 0:
                             parameters_a = (0, data, np.NaN, np.NaN, np.NaN, np.NaN, False)
                         else:
                             loc = np.log(data)
@@ -184,12 +184,15 @@ class SimulationScript:
                             else:
                                 parameters_a = (2, loc, scale, np.NaN, np.NaN, np.NaN, False)
                     else:
-                        loc = np.log(data)
-                        scale = np.log(uncertainty)
-                        if not flip:
+                        if data == 0:
                             parameters_a = (0, data, np.NaN, np.NaN, np.NaN, np.NaN, False)
                         else:
-                            parameters_a = (2, loc, scale, np.NaN, np.NaN, np.NaN, False)
+                            loc = np.log(data)
+                            scale = np.log(uncertainty)
+                            if not flip:
+                                parameters_a = (0, data, np.NaN, np.NaN, np.NaN, np.NaN, False)
+                            else:
+                                parameters_a = (2, loc, scale, np.NaN, np.NaN, np.NaN, False)
                 else:
                     parameters_a = (0, data, np.NaN, np.NaN, np.NaN, np.NaN, False)
                 bw_uncertainties.append(parameters_a)
@@ -201,16 +204,19 @@ class SimulationScript:
                     if indices[1] == 0:
                         uncertainty = uncertainty[k]
                         k += 1
-                        if uncertainty == 0:
+                        if uncertainty == 0 or data == 0:
                             parameters_a = (0, data, np.NaN, np.NaN, np.NaN, np.NaN, False)
                         else:
                             loc = np.log(data)
                             scale = np.log(uncertainty)
                             parameters_a = (2, loc, scale, np.NaN, np.NaN, np.NaN, False)
                     else:
-                        loc = np.log(data)
-                        scale = np.log(uncertainty)
-                        parameters_a = (2, loc, scale, np.NaN, np.NaN, np.NaN, False)
+                        if data == 0:
+                            parameters_a = (0, data, np.NaN, np.NaN, np.NaN, np.NaN, False)
+                        else:
+                            loc = np.log(data)
+                            scale = np.log(uncertainty)
+                            parameters_a = (2, loc, scale, np.NaN, np.NaN, np.NaN, False)
                 else:
                     parameters_a = (0, data, np.NaN, np.NaN, np.NaN, np.NaN, False)
                 bw_uncertainties.append(parameters_a)
