@@ -114,57 +114,14 @@ def create_stochastic_datapackage(tech_matrix, bio_matrix, cf_matrix, activities
 
     return datapackage
 
-def perform_static(index, datapackage, directory, k, act, t):
-    """
-    Perform static simulation.
-    """
-    lca = bc.LCA(
-        demand={index: 1},  # TODO: 这里是只有1吧，先不修改这里了。
-        data_objs=[datapackage],
-    )
-    lca.lci()
-    lca.lcia()
+def static_lca(index, datapackage, directory, k, t, myact):
+    simu.perform_static(index, datapackage, directory, k, t, myact)
 
-    os.makedirs(directory, exist_ok=True)
-    filename = os.path.join(directory, f"CASE_{k}_{t}_MC_simulations_{act}.csv")
+def stochastic_lca(index, datapackage, directory, k, myact, t):
+    simu.perform_stochastic(index, datapackage, directory, k, t, myact)
 
-    with open(filename, "w") as file:
-        file.write("kg CO2eq\n") # Write the header
-        file.write(f"{lca.score}")
-        print(f"Static LCA result saved to {filename}.")
 
-def perform_stochastic(index, datapackage, directory, k, act, t):
-    """
-    Perform Monte Carlo simulation and save the lca score.
-    """
-    lca = bc.LCA(
-        demand={index: 1},
-        data_objs=[datapackage],
-        use_distributions=True,
-    )
-    lca.lci()
-    lca.lcia()
-
-    print('LCA score (with uncertainty): ', lca.score)
-
-    os.makedirs(directory, exist_ok=True)
-    filename = os.path.join(directory, f"CASE_{k}_{t}_MC_simulations_{act}.csv")
-    
-    # TODO: these can be passed as parameters.
-    batch_size = 50
-    num_batches = 10
-
-    with open(filename, "w") as file:
-        file.write("kg CO2eq\n")
-        for p in range(num_batches):
-            batch_results = [lca.score for _ in zip(range(batch_size), lca)]
-            df_batch = pd.DataFrame(batch_results, columns=["kg CO2eq"])
-            df_batch.to_csv(file, header=False, index=False)
-            print(f"Batch {p} saved to {filename}.")
-
-    print(f"Results saved to {filename}.")
-
-# TODO
+# ------------ TODO ------------ 
 def manual_lca(tech_data, bio_data, cf_matrix, act):
     manual_tech_Data = -tech_data
     np.fill_diagonal(manual_tech_Data, -manual_tech_Data.diagonal())

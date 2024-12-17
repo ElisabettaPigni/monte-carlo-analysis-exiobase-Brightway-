@@ -23,11 +23,11 @@ def process_case(parallel_param):
     print(f"Processing {t} in process: {os.getpid()}")
 
     simu = SimulationScript()
-
+    
     if t == "static":
-        perform_static(index, datapackage, output_dir, k, act, t)
+        static_lca(index, datapackage, output_dir, k, t, act)
     elif t == "pedigree":
-        perform_stochastic(index, datapackage, output_dir, k, act, t)
+        stochastic_lca(index, datapackage, output_dir, k, t, act)
     
     print(f"{t} simulation is done.")
 
@@ -48,13 +48,18 @@ if __name__ == "__main__":
                 print("Datapackage are formatted.")
                 for myact, index in param[2]:
                     k += 1
-                    parallel_params.append((t, myact, index, k, param[3], datapackage))
+                    parallel_params.append((t, myact, (index + 1), k, param[3], datapackage))
+
+                    manual_tech_Data = -tech_matrix
+                    np.fill_diagonal(manual_tech_Data, -manual_tech_Data.diagonal())
+                    lca_score_manual = simu.manual_lca(manual_tech_Data, bio_matrix, cf_matrix, index + 1)
+                    print(f"Manually calculated lca score: {lca_score_manual, myact}")
             elif t == "pedigree":
                 datapackage = create_stochastic_datapackage(tech_matrix, bio_matrix, cf_matrix, activities, param[4], param[5])
                 print("Datapackage are formatted.")
                 for myact, index in param[2]:
                     k += 1
-                    parallel_params.append((t, myact, index + 1, k, param[3], datapackage))  # because add another column
+                    parallel_params.append((t, myact, (index + 1), k, param[3], datapackage))  # because add another column
             
         max_workers = os.cpu_count() if os.cpu_count() else 4
         with ProcessPoolExecutor(max_workers=max_workers) as executor:

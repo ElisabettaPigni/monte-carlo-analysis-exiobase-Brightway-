@@ -340,6 +340,7 @@ class SimulationScript:
         lca.lci()
         lca.lcia()
 
+        print(f"Brightway calculated lca score: {lca.score, myact}")
         os.makedirs(directory, exist_ok=True)
         filename = os.path.join(directory, f"CASE_{k}_{t}_MC_simulations_{myact}.csv")
 
@@ -348,7 +349,7 @@ class SimulationScript:
             file.write(f"{lca.score}")
             print(f"Static LCA result saved to {filename}.")
     
-    def perform_simu(self, index, datapackage, directory, k, myact, t, u, batch_size=50, num_batches=10):
+    def perform_stochastic(self, index, datapackage, directory, k, t, myact, batch_size=50, num_batches=10):
         """
         Perform Monte Carlo simulation and save the lca score.
         """
@@ -360,10 +361,9 @@ class SimulationScript:
         lca.lci()
         lca.lcia()
 
-        print('LCA score (with uncertainty): ', lca.score)
-
+        print(f"Brightway calculated lca score(with uncertainty): {lca.score, myact}")
         os.makedirs(directory, exist_ok=True)
-        filename = os.path.join(directory, f"CASE_{k}_{t}_{u}_MC_simulations_{myact}.csv")
+        filename = os.path.join(directory, f"CASE_{k}_{t}_MC_simulations_{myact}.csv")
 
         with open(filename, "w") as file:
             file.write("kg CO2eq\n")
