@@ -177,7 +177,7 @@ class SimulationScript:
                         if uncertainty == 0 or data == 0:
                             parameters_a = (0, data, np.NaN, np.NaN, np.NaN, np.NaN, False)
                         else:
-                            loc = np.log(data)
+                            loc = np.log(abs(data))
                             scale = np.log(uncertainty)
                             if not flip:
                                 parameters_a = (0, data, np.NaN, np.NaN, np.NaN, np.NaN, False)
@@ -187,7 +187,7 @@ class SimulationScript:
                         if data == 0:
                             parameters_a = (0, data, np.NaN, np.NaN, np.NaN, np.NaN, False)
                         else:
-                            loc = np.log(data)
+                            loc = np.log(abs(data))
                             scale = np.log(uncertainty)
                             if not flip:
                                 parameters_a = (0, data, np.NaN, np.NaN, np.NaN, np.NaN, False)
@@ -207,14 +207,14 @@ class SimulationScript:
                         if uncertainty == 0 or data == 0:
                             parameters_a = (0, data, np.NaN, np.NaN, np.NaN, np.NaN, False)
                         else:
-                            loc = np.log(data)
+                            loc = np.log(abs(data))
                             scale = np.log(uncertainty)
                             parameters_a = (2, loc, scale, np.NaN, np.NaN, np.NaN, False)
                     else:
                         if data == 0:
                             parameters_a = (0, data, np.NaN, np.NaN, np.NaN, np.NaN, False)
                         else:
-                            loc = np.log(data)
+                            loc = np.log(abs(data))
                             scale = np.log(uncertainty)
                             parameters_a = (2, loc, scale, np.NaN, np.NaN, np.NaN, False)
                 else:
@@ -251,27 +251,27 @@ class SimulationScript:
             (cf_data, cf_indices)
         ]
     
-    # def add_multifunctionality_flip(self, extend_data: pd.DataFrame, act_column: str, flip_column: str, dp_flip: np.ndarray, dp_indices: np.ndarray, activities: list) -> np.ndarray:
-    #     """
-    #     Add flip sign for multifunctionality foreground system. (It's used when user's input is all positive values and only the last column shows to flip or not.)
+    def add_multifunctionality_flip(self, extend_data: pd.DataFrame, act_column: str, flip_column: str, dp_flip: np.ndarray, dp_indices: np.ndarray, activities: list) -> np.ndarray:
+        """
+        Add flip sign for multifunctionality foreground system. (It's used when user's input is all positive values and only the last column shows to flip or not.)
         
-    #     Parameters:
-    #         * extend_data: user input file in dataframe format.
-    #         * flip_column: the column name of flip sign in user's input.
-    #         * dp_flip: the prepared flip numpy array for datapackage.
-    #         * dp_indices: the prepared indices numpy array for datapackage.
-    #     """
-    #     for flip, indices in zip(dp_flip, dp_indices):
-    #         if indices[1] == 0:
-    #             flip_sign = extend_data[extend_data[act_column] == activities[indices[0]]][flip_column]
-    #             if not flip_sign.empty:
-    #                 flip_sign = flip_sign.iloc[0]
-    #                 if flip_sign == False:
-    #                     dp_flip[indices[0]] = False
-    #             else:
-    #                 pass
+        Parameters:
+            * extend_data: user input file in dataframe format.
+            * flip_column: the column name of flip sign in user's input.
+            * dp_flip: the prepared flip numpy array for datapackage.
+            * dp_indices: the prepared indices numpy array for datapackage.
+        """
+        for flip, indices in zip(dp_flip, dp_indices):
+            if indices[1] == 0:
+                flip_sign = extend_data[extend_data[act_column] == activities[indices[0]]][flip_column]
+                if not flip_sign.empty:
+                    flip_sign = flip_sign.iloc[0]
+                    if flip_sign == False:
+                        dp_flip[indices[0]] = False
+                else:
+                    pass
 
-    #     return dp_flip
+        return dp_flip
     
     def add_multifunctionality_negative(self, extend_data, act_column: str, negative_column: str, dp_uncertainty, dp_indices, activities: list):
         """

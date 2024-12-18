@@ -7,6 +7,47 @@ from constants import *
 
 simu = SimulationScript()
 
+# extend before transform: error: Generated an exception: Technosphere matrix is not square: 77 activities (columns) and 76 products (rows). Use LeastSquaresLCA to solve this system, or fix the input data
+def prepare_datapackage_matrices_2(a_file, s_file, extend_file):
+    # get all activities
+    activities = simu.get_activities(a_file, delimiter='\t')
+    activities = ["extra_column"] + activities  # activities with extra column.
+
+    # background database technosphere matrix
+    tech_df = pd.read_table(a_file, sep='\t', header=None, low_memory=False)
+    raw_tech = tech_df.iloc[3:, 2:].astype('float').to_numpy()
+
+    # add extra data to technosphere 
+    extend_data_tech = pd.read_csv(extend_file, delimiter=";")
+    extend_data_amount = extend_data_tech.iloc[:, :2]
+    tech_matrix_extended = simu.extend_matrix(raw_tech, extend_data_amount, activities, is_technosphere=True)
+    if not (raw_tech.shape[0]+1 == tech_matrix_extended.shape[0] and raw_tech.shape[1]+1 == tech_matrix_extended.shape[1]):
+        print("Add column and row to technosphere failed!")
+
+    tech_matrix = simu.form_tech_matrix(tech_matrix_extended)  # tech_data without extra column
+    
+    # biosphere matrix
+    bio_df = pd.read_csv(s_file, header=[0,1], index_col=[0], sep='\t', low_memory=False)
+    raw_bio = simu.form_bio_matrix(bio_df, GHG)
+
+    # add extra data to biosphere
+    extend_data_bio = pd.DataFrame([{"Exiobase_big_col (matrix B)": "N2O - combustion - air",
+                                 "Amount": 5.62,
+                                 "Exchange uncertainty type": 1,
+                                 "Exchange loc": 1.7263316639056,
+                                 "Exchange scale": 0,
+                                 "Exchange negative": False}])
+    extend_data_bio_amount = extend_data_bio.iloc[:, :2]
+    bio_matrix = simu.extend_matrix(raw_bio, extend_data_bio_amount, GHG, is_technosphere=False)
+    if not (raw_bio.shape[0] == bio_matrix.shape[0] and raw_bio.shape[1]+1 == bio_matrix.shape[1]):
+        print("Add column and row to biosphere failed!")
+    
+    # characterization factor matrix
+    cf_matrix = np.diagflat(CFS)
+
+    return [tech_matrix, bio_matrix, cf_matrix, activities]
+
+# extend after transform
 def prepare_datapackage_matrices(a_file, s_file, extend_file):
     # get all activities
     activities = simu.get_activities(a_file, delimiter='\t')
