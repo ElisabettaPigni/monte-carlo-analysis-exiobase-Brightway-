@@ -98,52 +98,51 @@ class SimulationScript:
         A_ = I - A_IO
         A = -A_
         np.fill_diagonal(A, -A.diagonal())
-        print(A_)
 
-        # Asparse = sparse.coo_array(A)
-        # a_data = Asparse.data
-        # a_indices = np.array([tuple(coord) for coord in np.transpose(Asparse.nonzero())], dtype=bwp.INDICES_DTYPE)
-        # a_flip = np.array([False if i[0] == i[1] else True for i in a_indices ])
+        Asparse = sparse.coo_array(A)
+        a_data = Asparse.data
+        a_indices = np.array([tuple(coord) for coord in np.transpose(Asparse.nonzero())], dtype=bwp.INDICES_DTYPE)
+        a_flip = np.array([False if i[0] == i[1] else True for i in a_indices ])
 
-        # S_raw = pd.read_csv(S_file_path, header=[0,1], index_col=[0], sep='\t', low_memory=False)
-        # GHG_rows = ["CO2 - combustion - air",
-        #             "CO2 - non combustion - Cement production - air",
-        #             "CO2 - non combustion - Lime production - air",
-        #             "CO2 - waste - biogenic - air", 
-        #             "CO2 - waste - fossil - air",
-        #             "CO2 - agriculture - peat decay - air", 
-        #             "CH4 - agriculture - air",
-        #             "CH4 - waste - air",
-        #             "CH4 - combustion - air",
-        #             "CH4 - non combustion - Extraction/production of (natural) gas - air",
-        #             "CH4 - non combustion - Extraction/production of crude oil - air",
-        #             "CH4 - non combustion - Mining of antracite - air",
-        #             "CH4 - non combustion - Mining of bituminous coal - air",
-        #             "CH4 - non combustion - Mining of coking coal - air",
-        #             "CH4 - non combustion - Mining of lignite (brown coal) - air",
-        #             "CH4 - non combustion - Mining of sub-bituminous coal - air",
-        #             "CH4 - non combustion - Oil refinery - air",
-        #             "N2O - combustion - air",
-        #             "N2O - agriculture - air",
-        #             "SF6 - air"]
-        # S = S_raw.loc[GHG_rows]
+        S_raw = pd.read_csv(S_file_path, header=[0,1], index_col=[0], sep='\t', low_memory=False)
+        GHG_rows = ["CO2 - combustion - air",
+                    "CO2 - non combustion - Cement production - air",
+                    "CO2 - non combustion - Lime production - air",
+                    "CO2 - waste - biogenic - air", 
+                    "CO2 - waste - fossil - air",
+                    "CO2 - agriculture - peat decay - air", 
+                    "CH4 - agriculture - air",
+                    "CH4 - waste - air",
+                    "CH4 - combustion - air",
+                    "CH4 - non combustion - Extraction/production of (natural) gas - air",
+                    "CH4 - non combustion - Extraction/production of crude oil - air",
+                    "CH4 - non combustion - Mining of antracite - air",
+                    "CH4 - non combustion - Mining of bituminous coal - air",
+                    "CH4 - non combustion - Mining of coking coal - air",
+                    "CH4 - non combustion - Mining of lignite (brown coal) - air",
+                    "CH4 - non combustion - Mining of sub-bituminous coal - air",
+                    "CH4 - non combustion - Oil refinery - air",
+                    "N2O - combustion - air",
+                    "N2O - agriculture - air",
+                    "SF6 - air"]
+        S = S_raw.loc[GHG_rows]
 
-        # B = S.to_numpy()
-        # Bsparse = sparse.coo_array(B)
-        # b_data = Bsparse.data
-        # b_indices_remap = [[i[0] + len(activities),i[1]] for i in np.transpose(Bsparse.nonzero())]
-        # b_indices = np.array([tuple(coord) for coord in b_indices_remap], dtype=bwp.INDICES_DTYPE)
+        B = S.to_numpy()
+        Bsparse = sparse.coo_array(B)
+        b_data = Bsparse.data
+        b_indices_remap = [[i[0] + len(activities),i[1]] for i in np.transpose(Bsparse.nonzero())]
+        b_indices = np.array([tuple(coord) for coord in b_indices_remap], dtype=bwp.INDICES_DTYPE)
 
-        # CFs = [1., 1., 1., 1., 1., 1., 27.0, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 273., 273., 25200.]
-        # C = np.matrix(np.zeros((len(CFs), len(CFs))))
-        # C_diag = np.matrix(CFs)
-        # np.fill_diagonal(C, C_diag)
+        CFs = [1., 1., 1., 1., 1., 1., 27.0, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 29.8, 273., 273., 25200.]
+        C = np.matrix(np.zeros((len(CFs), len(CFs))))
+        C_diag = np.matrix(CFs)
+        np.fill_diagonal(C, C_diag)
 
-        # Csparse = sparse.coo_array(C)
-        # c_data =  Csparse.data 
-        # c_indices_remap = [[i[1] + len(activities),i[1]+ len(activities)] for i in np.transpose(Csparse.nonzero())]
-        # c_indices = np.array([tuple(coord) for coord in c_indices_remap], dtype=bwp.INDICES_DTYPE) 
-        # return A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip
+        Csparse = sparse.coo_array(C)
+        c_data =  Csparse.data 
+        c_indices_remap = [[i[1] + len(activities),i[1]+ len(activities)] for i in np.transpose(Csparse.nonzero())]
+        c_indices = np.array([tuple(coord) for coord in c_indices_remap], dtype=bwp.INDICES_DTYPE) 
+        return A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip
     
     def perform_static(self, index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, directory, k, t, myact):
         """

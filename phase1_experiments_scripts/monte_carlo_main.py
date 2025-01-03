@@ -23,7 +23,7 @@ def data_prepare():
 
     # ATTENTION: have to make sure the file has the same order as biosphere emissions.
     # cf_matrix = simu.form_cf_matrix("EXIOBASE-ecoinvent-bio-bw-GHG.csv", METHOD)
-    cf_matrix = cf_matrix = np.diagflat(OLD_CFS)
+    cf_matrix = cf_matrix = np.diagflat(CFS)
 
     simu.save_metadata(["extra"] + activities, "technosphere")
     simu.save_metadata(GHG, "biosphere")
@@ -72,7 +72,7 @@ def create_datapackages(tech_matrix, bio_matrix, cf_matrix):
     return datapackage
 
 def run_experiments(datapackage):
-    for act in SMALL_CHOSEN_ACT:
+    for act in SELECTED_AGGREGATED:
         print(act[1])
         simu.perform_simulation(act[1], datapackage)
 
