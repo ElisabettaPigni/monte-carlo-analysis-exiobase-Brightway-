@@ -48,19 +48,30 @@ if __name__ == "__main__":
                 print("Datapackage are formatted.")
                 for myact, index in param[2]:
                     k += 1
-                    parallel_params.append((t, myact, (index + 1), k, param[3], datapackage))
+
+                    # Pedigree: each case as different functional unit, becasue 1 column for foreground system, so the index has to add 1.
+                    # parallel_params.append((t, myact, (index + 1), k, param[3], datapackage))
+                    
+                    # Pedigree: each case has the same functinoal unit, the index in the constants.py always set to 0, so don't have to add 1 in this case.
+                    parallel_params.append((t, myact, index, k, param[3], datapackage))
 
                     manual_tech_Data = -tech_matrix
                     np.fill_diagonal(manual_tech_Data, -manual_tech_Data.diagonal())
-                    lca_score_manual = simu.manual_lca(manual_tech_Data, bio_matrix, cf_matrix, index + 1)
+
+                    # Pedigree: each case as different functional unit, becasue 1 column for foreground system, so the index has to add 1.
+                    # lca_score_manual = simu.manual_lca(manual_tech_Data, bio_matrix, cf_matrix, index + 1)
+
+                    # Pedigree: each case has the same functinoal unit, the index in the constants.py always set to 0, so don't have to add 1 in this case.
+                    lca_score_manual = simu.manual_lca(manual_tech_Data, bio_matrix, cf_matrix, index)
                     print(f"Manually calculated lca score: {lca_score_manual, myact}")
             elif t == "pedigree":
                 datapackage = create_stochastic_datapackage(tech_matrix, bio_matrix, cf_matrix, activities, param[4], param[5])
                 print("Datapackage are formatted.")
                 for myact, index in param[2]:
                     k += 1
-                    parallel_params.append((t, myact, (index + 1), k, param[3], datapackage))  # because add another column
-            
+                    # parallel_params.append((t, myact, (index + 1), k, param[3], datapackage))  # pedigree: because add another column
+                    parallel_params.append((t, myact, index, k, param[3], datapackage))  # pedigree: same functional nuit, dno't have to add 1.
+
         max_workers = os.cpu_count() if os.cpu_count() else 4
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
             futures = {executor.submit(process_case, parallel_param): parallel_param for parallel_param in parallel_params}

@@ -56,12 +56,22 @@ SECTOR_FILE = "../gsd_data/Grouping_sec.csv"
 GSD_FILE = "../gsd_data/GSD_sec_reg.csv"
 GSD_SMALL_FILE = "../gsd_data/GSD_background_pedigree_exiobase_small.csv"
 
-BIG_EXTEND = "../extend_data/20241121_foreground_system_big.csv"
-SMALL_EXTEND = "../extend_data/20241121_foreground_system_small.csv"
+# ----- EXTEND FILE FOR FIRST PEIDGREE EXPERIMENTS
+# BIG_EXTEND = "../extend_data/20241121_foreground_system_big.csv"
+# SMALL_EXTEND = "../extend_data/20241121_foreground_system_small.csv"
+
+# ----- EXTEND FILE FOR SECODN PEDIGREE EXPERIMENTS
+BIG_EXTEND = "../extend_data/20250110_foreground_system_big.csv"
+SMALL_EXTEND = "../extend_data/20250110_foreground_system_small.csv"
 
 # COMBINED PARAMETERS FOR PHASE 2 EXPERIMENTS (WITH EXTRA DATA)
-COMBINED_PARAMETERS = [(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE, SELECTED_AGGREGATED, EXIOBASE_AGGREGATED_OUTPUT, "EXIOBASE AGGREGATED", SMALL_EXTEND), (EXIOBASE_A_FILE, EXIOBASE_S_FILE, SELECTED_EXIOBASE, EXIOBASE_OUTPUT, "EXIOBASE", BIG_EXTEND)]
+# COMBINED_PARAMETERS = [(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE, SELECTED_AGGREGATED, EXIOBASE_AGGREGATED_OUTPUT, "EXIOBASE AGGREGATED", SMALL_EXTEND), (EXIOBASE_A_FILE, EXIOBASE_S_FILE, SELECTED_EXIOBASE, EXIOBASE_OUTPUT, "EXIOBASE", BIG_EXTEND)]
 
+# COMBINED PAPRAMETERS FOR PHASE 2 EXPERIMENTS (WITH EXTRA DATA, SAME FUNCTIONAL UNIT)
+SELECTED_EXIOBASE_2 = [("CN-Railway transportation services", 0), ("DE-Biodiesels", 0), ("CH-Beverages", 0), ("SE-Basic iron and steel and of ferro-alloys and first products thereof", 0), ("DE-Paraffin Waxes", 0), ("RU-Food waste for treatment: incineration", 0), ("NO-Other services (93)", 0), ("AT-Office machinery and computers (30)", 0)]
+SELECTED_AGGREGATED_2 = [("RoW-Services", 0), ("EU28-Biodiesels", 0), ("EU28-Agriculture-Forestry-Fishing", 0), ("EU28-Basic iron and steel and of ferro-alloys and first products thereof", 0), ("EU28-Energy", 0), ("RoW-Waste management", 0), ("EU28-Services", 0), ("EU28-Industry", 0)]
+
+COMBINED_PARAMETERS = [(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE, [("exrta_column", 0)], EXIOBASE_AGGREGATED_OUTPUT, "EXIOBASE AGGREGATED", SMALL_EXTEND), (EXIOBASE_A_FILE, EXIOBASE_S_FILE, [("extra_column", 0)], EXIOBASE_OUTPUT, "EXIOBASE", BIG_EXTEND)]
 
 # ---------- CONSTANTS FOR PLOT DRAWING ----------
 FOLDER_PATH = os.path.join(os.getcwd(), "Exiobase_folders_for_Ning")

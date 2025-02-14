@@ -31,12 +31,20 @@ def prepare_datapackage_matrices_2(a_file, s_file, extend_file):
     raw_bio = simu.form_bio_matrix(bio_df, GHG)
 
     # add extra data to biosphere
+#    extend_data_bio = pd.DataFrame([{"Exiobase_big_col (matrix B)": "N2O - combustion - air",
+#                                 "Amount": 5.62,
+#                                 "Exchange uncertainty type": 1,
+#                                 "Exchange loc": 1.7263316639056,
+#                                 "Exchange scale": 0,
+#                                 "Exchange negative": False}])
+
     extend_data_bio = pd.DataFrame([{"Exiobase_big_col (matrix B)": "N2O - combustion - air",
                                  "Amount": 5.62,
                                  "Exchange uncertainty type": 1,
-                                 "Exchange loc": 1.7263316639056,
+                                 "Exchange loc": 0,
                                  "Exchange scale": 0,
                                  "Exchange negative": False}])
+
     extend_data_bio_amount = extend_data_bio.iloc[:, :2]
     bio_matrix = simu.extend_matrix(raw_bio, extend_data_bio_amount, GHG, is_technosphere=False)
     if not (raw_bio.shape[0] == bio_matrix.shape[0] and raw_bio.shape[1]+1 == bio_matrix.shape[1]):
@@ -74,9 +82,17 @@ def prepare_datapackage_matrices(a_file, s_file, extend_file):
     extend_data_bio = pd.DataFrame([{"Exiobase_big_col (matrix B)": "N2O - combustion - air",
                                  "Amount": 5.62,
                                  "Exchange uncertainty type": 1,
-                                 "Exchange loc": 1.7263316639056,
+                                 "Exchange loc": 0,
                                  "Exchange scale": 0,
                                  "Exchange negative": False}])
+
+    # add extra data to biosphere
+    # extend_data_bio = pd.DataFrame([{"Exiobase_big_col (matrix B)": "N2O - combustion - air",
+    #                             "Amount": 5.62,
+    #                             "Exchange uncertainty type": 1,
+    #                             "Exchange loc": 1.7263316639056,
+    #                             "Exchange scale": 0,
+    #                             "Exchange negative": False}])
     extend_data_bio_amount = extend_data_bio.iloc[:, :2]
     bio_matrix = simu.extend_matrix(raw_bio, extend_data_bio_amount, GHG, is_technosphere=False)
     if not (raw_bio.shape[0] == bio_matrix.shape[0] and raw_bio.shape[1]+1 == bio_matrix.shape[1]):
