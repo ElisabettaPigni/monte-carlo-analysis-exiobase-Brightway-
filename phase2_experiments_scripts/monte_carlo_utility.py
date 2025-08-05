@@ -64,7 +64,7 @@ class SimulationScript:
             column = np.zeros([len(names)])  # this has the total amount of the whole foreground system
             for act, data in zip(extend_data.iloc[:, 0], extend_data.iloc[:, 1]):
                 column[names.index(act)] = data
-            column[0] = 1
+            column[0] = 0.00001
             column = np.nan_to_num(column, nan=0)
             column = np.array([column]).T  # swap the rows and columns of an array.
             extended_matrix = np.concatenate((column, np.concatenate((row, original_matrix), axis=0)), axis=1)
