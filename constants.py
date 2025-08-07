@@ -61,8 +61,8 @@ GSD_SMALL_FILE = "../gsd_data/GSD_background_pedigree_exiobase_small.csv"
 # SMALL_EXTEND = "../extend_data/20241121_foreground_system_small.csv"
 
 # ----- EXTEND FILE FOR SECODN PEDIGREE EXPERIMENTS
-BIG_EXTEND = "../extend_data/20250110_foreground_system_big.csv"
-SMALL_EXTEND = "../extend_data/20250110_foreground_system_small.csv"
+BIG_EXTEND = "../extend_data/20250806_foreground_system_big.csv"
+SMALL_EXTEND = "../extend_data/20250806_foreground_system_small.csv"
 
 # COMBINED PARAMETERS FOR PHASE 2 EXPERIMENTS (WITH EXTRA DATA)
 # COMBINED_PARAMETERS = [(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE, SELECTED_AGGREGATED, EXIOBASE_AGGREGATED_OUTPUT, "EXIOBASE AGGREGATED", SMALL_EXTEND), (EXIOBASE_A_FILE, EXIOBASE_S_FILE, SELECTED_EXIOBASE, EXIOBASE_OUTPUT, "EXIOBASE", BIG_EXTEND)]

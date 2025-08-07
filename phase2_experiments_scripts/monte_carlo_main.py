@@ -40,7 +40,7 @@ def prepare_datapackage_matrices_2(a_file, s_file, extend_file):
 
     extend_data_bio = pd.DataFrame([{"Exiobase_big_col (matrix B)": "N2O - combustion - air",
                                  "Amount": 5.62,
-                                 "Exchange uncertainty type": 1,
+                                 "Exchange uncertainty type": 0,
                                  "Exchange loc": 0,
                                  "Exchange scale": 0,
                                  "Exchange negative": False}])
