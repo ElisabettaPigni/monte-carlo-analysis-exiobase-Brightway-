@@ -51,7 +51,6 @@
     ```
 
 ## Description
-- `20240805-Import-exio3big-and-monte-carlo-bw25.py`: This is the origin script from ElisabettaPigni.
 - `monte_carlo_utility.py`: All functionality is implemented here.
 - `monte_carlo_V2.0.py`: This is the entry file for run simulations or draw plots.
 - `constants.py`: Include all the constants.
