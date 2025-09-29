@@ -56,7 +56,7 @@
 - `constants.py`: Include all the constants.
 - `parallel.py`: This is the entry file for run simulations in parallel.
 - `requirements.txt`: Include all the dependencies.
-- `activities_big_dataset.csv` All activities from big exiobase.
+
 
 ### Reference:  
 - [Brightway Installation](https://docs.brightway.dev/en/latest/content/installation/index.html)  
@@ -65,5 +65,6 @@
 - [Brightway documentation for uncertainty](https://stats-arrays.readthedocs.io/en/latest/#mapping-parameter-array-columns-to-uncertainty-distributions)  
 - [EXIOBASE-ecoinvent-biosphere.csv](https://github.com/brightway-lca/brightway2-io/blob/main/bw2io/data/lci/EXIOBASE-ecoinvent-biosphere.csv?plain=1)
 - [EXIOBASE Description](https://zenodo.org/records/5589597)
+
 
 [![DOI](https://zenodo.org/badge/838864323.svg)](https://doi.org/10.5281/zenodo.17130112)
