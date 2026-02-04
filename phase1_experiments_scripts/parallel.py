@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     simu = SimulationScript()
 
-    for param in COMBINED_PARAMETERS:
+    for param in COMBINED_PARAMETERS_P1:
         print(f"{param[4]} simulation is running...")
         A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = simu.build_bw_matrix(param[0], param[1])
         print("Matrices are formatted.")
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
         parallel_params = []
         k = 0
-        for t in DIST_TYPE:
+        for t in DIST_TYPE_P1:
             if t == "static":
                 for myact, index in param[2]:
                     k += 1

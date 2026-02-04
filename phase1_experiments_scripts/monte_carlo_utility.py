@@ -288,8 +288,8 @@ class SimulationScript:
         os.makedirs(directory, exist_ok=True)
         filename = os.path.join(directory, f"CASE_{k}_{t}_{u}_MC_simulations_{myact}.csv")
         
-        # TODO: these can be passed as parameters.
-        batch_size = 50
+        # iterations = batch_size * num_batches
+        batch_size = 100
         num_batches = 10
 
         with open(filename, "w") as file:

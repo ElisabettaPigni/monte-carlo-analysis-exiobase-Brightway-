@@ -18,12 +18,13 @@ SELECTED_EXIOBASE = [("CN-Railway transportation services", 6156), ("DE-Biodiese
 SELECTED_AGGREGATED = [("RoW-Services", 68), ("EU28-Biodiesels", 11), ("EU28-Agriculture-Forestry-Fishing", 0), ("EU28-Basic iron and steel and of ferro-alloys and first products thereof", 13), ("EU28-Energy", 1), ("RoW-Waste management", 71), ("EU28-Services", 30), ("EU28-Industry", 3)]
 
 # UNCERTAINTY
-DIST_TYPE = ["static", "uniform", "log-normal", "pedigree"] # Define the types of distribution
+DIST_TYPE_P1 = ["static", "uniform", "log-normal"]
+DIST_TYPE_P2 = ["static", "uniform", "log-normal", "pedigree"] # Define the types of distribution
 U_UNIFORM = [0.1, 0.2, 0.3] # Define the uncertainty for uniform distribution
 U_LOG = [1.106, 1.225, 1.363] # Define the uncertainty for log-normal distribution
 
 # COMBINED PARAMETERS FOR PHASE 1 EXPERIMENTS (WITHOUT EXTRA DATA)
-# COMBINED_PARAMETERS = [(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE, SELECTED_AGGREGATED, EXIOBASE_AGGREGATED_OUTPUT, "EXIOBASE AGGREGATED"), (EXIOBASE_A_FILE, EXIOBASE_S_FILE, SELECTED_EXIOBASE, EXIOBASE_OUTPUT, "EXIOBASE")]
+COMBINED_PARAMETERS_P1 = [(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE, SELECTED_AGGREGATED, EXIOBASE_AGGREGATED_OUTPUT, "EXIOBASE AGGREGATED"), (EXIOBASE_A_FILE, EXIOBASE_S_FILE, SELECTED_EXIOBASE, EXIOBASE_OUTPUT, "EXIOBASE")]
 
 # ---------- CONSTANTS FOR CASE STUDY ----------
 METHOD = ('EF v3.1', 'climate change', 'global warming potential (GWP100)')
@@ -64,14 +65,13 @@ GSD_SMALL_FILE = "../gsd_data/GSD_background_pedigree_exiobase_small.csv"
 BIG_EXTEND = "../extend_data/20250806_foreground_system_big.csv"
 SMALL_EXTEND = "../extend_data/20250806_foreground_system_small.csv"
 
-# COMBINED PARAMETERS FOR PHASE 2 EXPERIMENTS (WITH EXTRA DATA)
-# COMBINED_PARAMETERS = [(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE, SELECTED_AGGREGATED, EXIOBASE_AGGREGATED_OUTPUT, "EXIOBASE AGGREGATED", SMALL_EXTEND), (EXIOBASE_A_FILE, EXIOBASE_S_FILE, SELECTED_EXIOBASE, EXIOBASE_OUTPUT, "EXIOBASE", BIG_EXTEND)]
+# COMBINED PARAMETERS FOR PHASE 2 EXPERIMENTS (SAME WITH EXTRA DATA)
+# COMBINED_PARAMETERS_P2 = [(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE, SELECTED_AGGREGATED, EXIOBASE_AGGREGATED_OUTPUT, "EXIOBASE AGGREGATED", SMALL_EXTEND), (EXIOBASE_A_FILE, EXIOBASE_S_FILE, SELECTED_EXIOBASE, EXIOBASE_OUTPUT, "EXIOBASE", BIG_EXTEND)]
 
 # COMBINED PAPRAMETERS FOR PHASE 2 EXPERIMENTS (WITH EXTRA DATA, SAME FUNCTIONAL UNIT)
-SELECTED_EXIOBASE_2 = [("CN-Railway transportation services", 0), ("DE-Biodiesels", 0), ("CH-Beverages", 0), ("SE-Basic iron and steel and of ferro-alloys and first products thereof", 0), ("DE-Paraffin Waxes", 0), ("RU-Food waste for treatment: incineration", 0), ("NO-Other services (93)", 0), ("AT-Office machinery and computers (30)", 0)]
-SELECTED_AGGREGATED_2 = [("RoW-Services", 0), ("EU28-Biodiesels", 0), ("EU28-Agriculture-Forestry-Fishing", 0), ("EU28-Basic iron and steel and of ferro-alloys and first products thereof", 0), ("EU28-Energy", 0), ("RoW-Waste management", 0), ("EU28-Services", 0), ("EU28-Industry", 0)]
+COMBINED_PARAMETERS_P2 = [(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE, [("exrta_column", 0)], EXIOBASE_AGGREGATED_OUTPUT, "EXIOBASE AGGREGATED", SMALL_EXTEND), (EXIOBASE_A_FILE, EXIOBASE_S_FILE, [("extra_column", 0)], EXIOBASE_OUTPUT, "EXIOBASE", BIG_EXTEND)]
 
-COMBINED_PARAMETERS = [(EXIOBASE_AGGREGATED_A_FILE, EXIOBASE_AGGREGATED_S_FILE, [("exrta_column", 0)], EXIOBASE_AGGREGATED_OUTPUT, "EXIOBASE AGGREGATED", SMALL_EXTEND), (EXIOBASE_A_FILE, EXIOBASE_S_FILE, [("extra_column", 0)], EXIOBASE_OUTPUT, "EXIOBASE", BIG_EXTEND)]
+
 
 # ---------- CONSTANTS FOR PLOT DRAWING ----------
 FOLDER_PATH = os.path.join(os.getcwd(), "Exiobase_folders_for_Ning")
