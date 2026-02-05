@@ -13,18 +13,19 @@ sys.path.append(os.path.abspath(".."))
 from constants import *
 from monte_carlo_utility import *
 
-def process_case(parallel_param):
+def process_case(parallel_param, matrix_params):
     """
     parallel_param type: tuple
     parallel_param format: ((t, "0", myact, index, k, output_dir), matrices)
     """
-    (t, u, myact, index, k, output_dir) = parallel_param[0]
+    (t, u, myact, index, k, output_dir) = parallel_param
     print(f"Processing {t}_{u} in process: {os.getpid()}")
 
-    matrices = parallel_param[1]
-    A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = matrices
-
     simu = SimulationScript()
+
+    A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = simu.build_bw_matrix(matrix_params[0], matrix_params[1])
+
+    print("Matrices are formatted.")
 
     if t == "static":
         simu.perform_static(index, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip, A, A_, B, C, output_dir, k, t, myact)
@@ -46,10 +47,8 @@ if __name__ == "__main__":
 
     for param in COMBINED_PARAMETERS_P1:
         print(f"{param[4]} simulation is running...")
-        A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip = simu.build_bw_matrix(param[0], param[1])
-        print("Matrices are formatted.")
 
-        matrices = (A, A_, A_IO, B, C, a_data, b_data, c_data, a_indices, b_indices, c_indices, a_flip)
+        matrix_params = (param[0], param[1])
 
         parallel_params = []
         k = 0
@@ -69,9 +68,9 @@ if __name__ == "__main__":
                         k += 1
                         parallel_params.append((t, u, myact, index, k, param[3]))
         
-        max_workers = os.cpu_count() if os.cpu_count() else 4
+        max_workers = int(os.cpu_count()/4) or 4
         with ProcessPoolExecutor(max_workers=max_workers) as executor:
-            futures = {executor.submit(process_case, (parallel_param, matrices)): (parallel_param, matrices) for parallel_param in parallel_params}
+            futures = {executor.submit(process_case, parallel_param, matrix_params): (parallel_param, matrix_params) for parallel_param in parallel_params}
             for future in as_completed(futures):
                 try:
                     future.result()
