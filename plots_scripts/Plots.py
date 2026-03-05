@@ -11,12 +11,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import seaborn as sb
-import textwrap
 import re
-import matplotlib.patches as mpatches
 
 os.getcwd()
-os.chdir(r"C:\Users\Elisabetta\Desktop\RISULTATI AALBORG\Plots_script_and_graphs_phase_I_and_II") 
+os.chdir(r"C:\XXX") 
 
 #%% --- Phase 1 - Boxplot exiobase --- 
 
@@ -107,7 +105,7 @@ def draw_plot_exio(filename, compare_type="cases", database_name="", save_path="
         
 # Create the plots for phase 1, different uncertainty cases for different exiobase sectors
 draw_plot_exio(
-    filename=r"C:\Users\Elisabetta\Desktop\RISULTATI AALBORG\Ning_all_experiments\20241206_EXIOBASE_phase1\all_results.csv",
+    filename=r"C:\XXX\all_results.csv",
     compare_type="cases",
     database_name="Phase_1_noTSF",
     save_path="20250807_exio_plots"
@@ -201,7 +199,7 @@ def draw_plot_exio_agg(filename, compare_type="cases", database_name="", save_pa
         raise NotImplementedError("Only 'cases' comparison is currently implemented.")
 
 draw_plot_exio_agg(
-    filename=r"C:\Users\Elisabetta\Desktop\RISULTATI AALBORG\Ning_all_experiments\20241206_EXIOBASE_AGGREGATED_phase1\all_results.csv",
+    filename=r"C:\XXX\all_results.csv",
     compare_type="cases",
     database_name="Phase_1_noTSF",
     save_path="20250807_exio_agg_plots"
@@ -213,7 +211,7 @@ draw_plot_exio_agg(
 def combine_sector_plots_multi(
     file_sector_map,  # Dict: filename -> list of sector names
     database_name="",
-    save_path="PIPPOLO/",
+    save_path="COMBINED/",
     compare_type="cases"
 ):
     import pandas as pd
@@ -300,8 +298,22 @@ def combine_sector_plots_multi(
     global_ymin = plot_df["kg CO2eq"].min()
     global_ymax = plot_df["kg CO2eq"].max()
 
-    for ax, sector in zip(axs, all_sectors):
+    import string
+    panel_letters = string.ascii_uppercase
+    
+    for idx, (ax, sector) in enumerate(zip(axs, all_sectors)):
         filtered_data = plot_df[plot_df["sector"] == sector]
+    
+        # Add panel letter (A), B), C), ...)
+        ax.text(
+            0.02, 0.98,
+            f"{panel_letters[idx]})",
+            transform=ax.transAxes,
+            fontsize=22,
+            fontweight="bold",
+            va="top",
+            ha="left"
+        )
 
         cases = list(filtered_data["case"].unique())
         uniform_cases = sorted([c for c in cases if "uniform" in c.lower()])
@@ -416,55 +428,47 @@ combine_sector_plots_multi(
 #%% --- Phase 2 - Boxplot: exiobase, exiobase agg, ecoinvent with the foreground system ---
 
 
-filepath_exio_agg_nominal = r"C:\Users\Elisabetta\Desktop\RISULTATI AALBORG\Ning_all_experiments\20250807_EXIOBASE AGGREGATED_phase2\CASE_1_static_MC_simulations_exrta_column.csv"
-filepath_exio_agg = r"C:\Users\Elisabetta\Desktop\RISULTATI AALBORG\Ning_all_experiments\20250807_EXIOBASE AGGREGATED_phase2\CASE_2_exrta_column_MC_simulations_pedigree.csv"
+filepath = r"C:\XXX\exiobase_ecoinevnt_comparison.csv"
+phase2_results = pd.read_csv(filepath, sep=";")
 
-filepath_exio_nominal = r"C:\Users\Elisabetta\Desktop\RISULTATI AALBORG\Ning_all_experiments\20250807_EXIOBASE_phase2\CASE_1_static_MC_simulations_extra_column.csv"
-filepath_exio = r"C:\Users\Elisabetta\Desktop\RISULTATI AALBORG\Ning_all_experiments\20250807_EXIOBASE_phase2\CASE_2_extra_column_MC_simulations_pedigree.csv"
-
-filepath_ecoinvent_nominal = r"C:\Users\Elisabetta\Desktop\RISULTATI AALBORG\Ecoinvent_script_and_mc_results\20250806_static_results_with_TSF.csv"
-filepath_ecoinvent = r"C:\Users\Elisabetta\Desktop\RISULTATI AALBORG\Ecoinvent_script_and_mc_results\20250806_mc_results_with_TSF.csv"
-
-exio_nominal = pd.read_csv(filepath_exio_nominal).rename(columns={"kg CO2eq": "exio nominal"})
-exio = pd.read_csv(filepath_exio).rename(columns={"kg CO2eq": "exio"})
-
-exio_agg_nominal = pd.read_csv(filepath_exio_agg_nominal).rename(columns={"kg CO2eq": "exio agg nominal"})
-exio_agg = pd.read_csv(filepath_exio_agg).rename(columns={"kg CO2eq": "exio agg"})
-
-ecoinvent_nominal = pd.read_csv(filepath_ecoinvent_nominal).rename(columns={"kg CO2 eq": "ecoinvent nominal"})
-ecoinvent = pd.read_csv(filepath_ecoinvent).rename(columns={"kg CO2 eq": "ecoinvent"})
-
-phase2_results = pd.concat([exio_agg_nominal, exio_nominal, ecoinvent_nominal, exio_agg, exio, ecoinvent], axis=1)
 
 def draw_phase2_boxplot(dataframe, save_path="phase2/"):
     # Scale to Million tons
     df_Mtons = dataframe / 1e9
 
     # Separate nominal and MC columns
-    nominal_columns = df_Mtons.columns[:3]
-    mc_columns = df_Mtons.columns[3:]
-    column_order = list(nominal_columns) + list(mc_columns)  # for consistent x-axis order
+    column_order = [
+    "exio agg bg",
+    "exio agg bg+fg",
+    "exio bg",
+    "exio bg+fg",
+    "ecoinvent bg",
+    "ecoinvent bg+fg"
+    ] # for consistent x-axis order
 
     # Prepare long-form DataFrame for seaborn
+    # Prepare long-form DataFrame for seaborn
     long_data = []
-
-    # Add nominal values (1 value per column)
-    for col in nominal_columns:
-        value = df_Mtons[col].dropna().iloc[0]
-        long_data.append({
-            "Database": col,
-            "Value": value,
-            "Type": "nominal"
-        })
-
-    # Add Monte Carlo simulation values
-    for col in mc_columns:
-        for val in df_Mtons[col].dropna():
+    
+    for col in df_Mtons.columns:
+        base_name = col.replace(" nominal", "")
+    
+        if "nominal" in col:
+            # single nominal value
+            value = df_Mtons[col].dropna().iloc[0]
             long_data.append({
-                "Database": col,
-                "Value": val,
-                "Type": "Monte Carlo"
+                "Database": base_name,
+                "Value": value,
+                "Type": "nominal"
             })
+        else:
+            # Monte Carlo values
+            for val in df_Mtons[col].dropna():
+                long_data.append({
+                    "Database": base_name,
+                    "Value": val,
+                    "Type": "Monte Carlo"
+                })
 
     plot_df = pd.DataFrame(long_data)
 
@@ -504,12 +508,49 @@ def draw_phase2_boxplot(dataframe, save_path="phase2/"):
     # Save plot
     os.makedirs(save_path, exist_ok=True)
     plt.tight_layout()
-    plt.savefig(os.path.join(save_path, "phase2_boxplot_PROVA2.png"), bbox_inches='tight')
+    plt.savefig(os.path.join(save_path, "phase2_boxplot.png"), bbox_inches='tight')
     plt.close()
 
 # Example usage
-draw_phase2_boxplot(phase2_results, save_path="20250807_phase2/")
+draw_phase2_boxplot(phase2_results, save_path="20260302_phase2/")
 
+
+#%% --- descriptive statistics ---
+
+
+def descriptive_stats(data, label):
+    """Return descriptive statistics including IQR for a given dataset."""
+    p5, p95, q1, q2, q3 = np.percentile(data, [5, 95, 25, 50, 75])
+    CV = np.std(data)/np.mean(data)*100
+    stats = {
+        'Database': label,
+        'count': np.count_nonzero(data),
+        'mean': np.mean(data),
+        'std_dev': np.std(data),
+        'CV': CV,
+        'min': np.min(data),
+        'max': np.max(data),
+        '5th_percentile': p5,
+        '25th_percentile': q1,
+        '50th_percentile': q2,  # Median
+        '75th_percentile': q3,
+        '95th_percentile': p95,
+        'IQR': q3 - q1
+    }
+    return stats
+
+
+# Collect stats for each dataset
+stats_list1 = [
+    descriptive_stats(phase2_results["exio agg bg"], "exio agg bg"),
+    descriptive_stats(phase2_results["exio agg bg+fg"], "exio agg bg+fg"),
+    descriptive_stats(phase2_results["exio bg"], "exio bg"),
+    descriptive_stats(phase2_results["exio bg+fg"], "exio bg+fg"),
+    descriptive_stats(phase2_results["ecoinvent bg"], "ecoinvent bg"),
+    descriptive_stats(phase2_results["ecoinvent bg+fg"], "ecoinvent bg+fg")] 
+    
+# Convert to DataFrame
+stats_df_complete = pd.DataFrame(stats_list1)
 
 #%% --- descriptive statistics of all scenarios and sectors ---
 
@@ -526,30 +567,24 @@ unif_2 = exio_agg_NO_TSF.iloc[:, 0:32]
 exiobase_without_TSF = pd.concat([unif_1, lognorm_1], axis=1)
 exiobase_agg_without_TSF = pd.concat([unif_2, lognorm_2], axis=1)
 
-def descriptive_stats(data, label):
+def descriptive_stats2(data, label):
     """Return descriptive statistics including IQR for a given dataset."""
-    q1 = np.percentile(data, 25)
-    q3 = np.percentile(data, 75)
+    q1, q2, q3 = np.percentile(data, [25, 50, 75])
     stats = {
-        'Dataset': label,
+        'Database': label,
         'count': np.count_nonzero(data),
         'mean': np.mean(data),
         'std_dev': np.std(data),
         'min': np.min(data),
         'max': np.max(data),
         '25th_percentile': q1,
-        '50th_percentile': np.percentile(data, 50),  # Median
+        '50th_percentile': q2,  # Median
         '75th_percentile': q3,
         'IQR': q3 - q1
     }
     return stats
 
-
-# Collect stats for each dataset
-stats_list = [
-    descriptive_stats(exio, "exio"),
-    descriptive_stats(exio_agg, "exio_agg"),
-    descriptive_stats(ecoinvent, "ecoinvent"),
+stats_list2 = [    
     descriptive_stats(exiobase_without_TSF.iloc[:,8], "uniform_0.1_CN, Railway services"),
     descriptive_stats(exiobase_without_TSF.iloc[:,9], "uniform_0.1_DE, Biodiesel"),
     descriptive_stats(exiobase_without_TSF.iloc[:,10], "uniform_0.1_CH, Beverages"),
@@ -649,5 +684,7 @@ stats_list = [
 ]
 
 # Convert to DataFrame
-stats_df_complete = pd.DataFrame(stats_list)
+stats_df_complete2 = pd.DataFrame(stats_list2)
+
+
 
