@@ -139,14 +139,28 @@ def create_stochastic_datapackage(tech_matrix, bio_matrix, cf_matrix, activities
 
     # find and save specific uncertainty
     uncertainty_spec_df = pd.read_csv(extend_file, delimiter=";")
-    uncertainty_df = uncertainty_spec_df.loc[:, [uncertainty_spec_df.columns[0], uncertainty_spec_df.columns[3]]].copy()
-    uncertainty_df = uncertainty_df.where(pd.notnull(uncertainty_df), 0)
-    uncertainty_spec = np.zeros([len(activities)])
+    fg_amount_df = uncertainty_spec_df[uncertainty_spec_df.columns[1]]
+    fg_amount_df = fg_amount_df[fg_amount_df != 0]
+    raw_uncertainty_df = uncertainty_spec_df.loc[:, [uncertainty_spec_df.columns[0], uncertainty_spec_df.columns[3]]].copy()
+    raw_uncertainty_df = raw_uncertainty_df.where(pd.notnull(raw_uncertainty_df), 0)
+    
+    second_col = raw_uncertainty_df.columns[1]
+    uncertainty_df = raw_uncertainty_df[
+        (raw_uncertainty_df[second_col].notna()) &
+        (raw_uncertainty_df[second_col] != 0)
+    ]
+
+    if uncertainty_df.size == 0:
+        uncertainty_spec = np.zeros([fg_amount_df.size+1])
+    else:
+        uncertainty_spec = np.zeros([len(uncertainty_df)+1])
+    i = 0
     for act in activities:
-        if uncertainty_df[uncertainty_df.iloc[:, 0] == act][uncertainty_spec_df.columns[3]].empty:
-            uncertainty_spec[activities.index(act)] = 0
+        if uncertainty_df[uncertainty_df.iloc[:, 0] == act][uncertainty_spec_df.columns[3]].empty or (uncertainty_df[uncertainty_df.iloc[:, 0] == act][uncertainty_spec_df.columns[3]] == 0).any():
+            pass
         else:
-            uncertainty_spec[activities.index(act)] = uncertainty_df[uncertainty_df.iloc[:, 0] == act][uncertainty_spec_df.columns[3]].iloc[0]
+            uncertainty_spec[i+1] = uncertainty_df[uncertainty_df.iloc[:, 0] == act][uncertainty_spec_df.columns[3]].iloc[0]
+            i += 1
     for i in range(len(simu.metadata)):
         if 0 in simu.metadata[i]:
             for key, value in simu.metadata[i].items():
@@ -155,17 +169,10 @@ def create_stochastic_datapackage(tech_matrix, bio_matrix, cf_matrix, activities
     # add pedigree and specific uncertainty
     tech_uncertainty = simu.add_uncertainty(tech_data, tech_indices, tech_flip)
     bio_uncertainty = simu.add_uncertainty(bio_data, bio_indices, None)
-    
+
     # add multifunctionality negative
-    extend_data_tech = pd.read_csv(extend_file, delimiter=";")
-    extend_data_bio = pd.DataFrame([{"Exiobase_big_col (matrix B)": "N2O - combustion - air",
-                                 "Amount": 5.62,
-                                 "Exchange uncertainty type": 1,
-                                 "Exchange loc": 1.7263316639056,
-                                 "Exchange scale": 0,
-                                 "Exchange negative": False}])
-    tech_uncertainty = simu.add_multifunctionality_negative(extend_data_tech, extend_data_tech.columns[0], "Exchange negative", tech_uncertainty, tech_indices, activities)
-    bio_uncertainty = simu.add_multifunctionality_negative(extend_data_bio, extend_data_bio.columns[0], "Exchange negative", bio_uncertainty, bio_indices, activities)
+    tech_uncertainty = simu.add_multifunctionality_negative(tech_data, tech_uncertainty, tech_indices)
+    bio_uncertainty = simu.add_multifunctionality_negative(bio_data, bio_uncertainty, bio_indices)
 
     datapackage = simu.prepare_datapackage(datapackage_data, uncertainty=[tech_uncertainty, bio_uncertainty, None])
 
