@@ -273,22 +273,12 @@ class SimulationScript:
 
         return dp_flip
     
-    def add_multifunctionality_negative(self, extend_data, act_column: str, negative_column: str, dp_uncertainty, dp_indices, activities: list):
-        """
-        Add uncertainty negative for multifunctionality foreground system.
-        """
-        for uncertainty, indices in zip(dp_uncertainty, dp_indices):
-            if indices[1] == 0:
-                if indices[0] >= len(activities):
-                    negative_sign = extend_data[extend_data[act_column] == activities[indices[0]-len(activities)]][negative_column] # minus technosphere row.
-                    pos = dp_indices.tolist().index((indices[0], indices[1]))
-                    if not negative_sign.empty:
-                        if negative_sign == True:
-                            dp_uncertainty[pos][-1] = True
-                        elif negative_sign == False:
-                            dp_uncertainty[pos][-1] = False
-                    else:
-                        pass
+    def add_multifunctionality_negative(self, dp_matrices, dp_uncertainty, dp_indices):
+        for i, data in enumerate(dp_matrices):
+            if data < 0:
+                dp_uncertainty[i][-1] = True
+            else:
+                dp_uncertainty[i][-1] = False
 
         return dp_uncertainty
 
